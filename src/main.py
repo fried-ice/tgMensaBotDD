@@ -53,6 +53,10 @@ def dadJoke(update, context):
     context.bot.send_message(chat_id=update.message.chat_id, text=resp.text)
 
 
+def maxime(update, context):
+    context.bot.send_sticker(chat_id=update.message.chat_id, sticker="CAADBQADfAMAAukKyAPfAAFRgAuYdNoWBA")
+
+
 def main():
     logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
@@ -70,6 +74,9 @@ def main():
 
     dadJokeHandler = CommandHandler('leon', dadJoke)
     updater.dispatcher.add_handler(dadJokeHandler)
+
+    maximeHandler = CommandHandler('maxime', maxime)
+    updater.dispatcher.add_handler(maximeHandler)
 
     echoHandlerText = MessageHandler(Filters.text, echoText)
     updater.dispatcher.add_handler(echoHandlerText)
