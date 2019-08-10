@@ -11,9 +11,13 @@ def start(update, context):
     context.bot.send_message(chat_id=update.message.chat_id, text="Reichenbach is never an option!")
 
 
-def echo(update, context):
+def echoText(update, context):
     context.bot.send_message(chat_id=update.message.chat_id, text=update.message.text)
 
+
+def echoSticker(update, context):
+    sticker = update.message.sticker
+    context.bot.send_sticker(chat_id=update.message.chat_id, sticker=sticker)
 
 def mensa(update, context):
     params = context.args
@@ -67,8 +71,11 @@ def main():
     dadJokeHandler = CommandHandler('leon', dadJoke)
     updater.dispatcher.add_handler(dadJokeHandler)
 
-    echoHandler = MessageHandler(Filters.text, echo)
-    updater.dispatcher.add_handler(echoHandler)
+    echoHandlerText = MessageHandler(Filters.text, echoText)
+    updater.dispatcher.add_handler(echoHandlerText)
+
+    echoHandlerSticker = MessageHandler(Filters.sticker, echoSticker)
+    updater.dispatcher.add_handler(echoHandlerSticker)
 
     updater.start_polling()
 
