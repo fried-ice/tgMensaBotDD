@@ -60,8 +60,11 @@ def maxime(update, context):
 def main():
     logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
-    apiToken = os.environ['TELEGRAM_APITOKEN']
-    updater = Updater(token=apiToken, use_context=True)
+    API_TOKEN = os.environ['TELEGRAM_APITOKEN']
+    APP_ADDR = os.environ['APP_ADDRESS']
+    PORT = int(os.environ.get('PORT', '8443'))
+
+    updater = Updater(token=API_TOKEN, use_context=True)
 
     startHandler = CommandHandler('start', start)
     updater.dispatcher.add_handler(startHandler)
@@ -84,7 +87,9 @@ def main():
     echoHandlerSticker = MessageHandler(Filters.sticker, echoSticker)
     updater.dispatcher.add_handler(echoHandlerSticker)
 
-    updater.start_polling()
+    updater.start_webhook(listen="0.0.0.0", port=PORT, url_path=API_TOKEN)
+    updater.bot.set_webhook(APP_ADDR + API_TOKEN)
+    updater.idle()
 
 
 if __name__ == "__main__":
