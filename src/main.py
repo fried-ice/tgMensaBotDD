@@ -68,7 +68,7 @@ def dadJoke():
 
 def maxime(update, context):
     context.bot.send_sticker(chat_id=update.message.chat_id, sticker="CAADBQADfAMAAukKyAPfAAFRgAuYdNoWBA")
-    
+
 def andrey(update, context):
     context.bot.send_message(chat_id=update.message.chat_id, text="11.00 Bois. Yeef!")
 
