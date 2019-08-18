@@ -1,3 +1,4 @@
+# -*- encoding: iso-8859-15 -*-
 #!/bin/python
 
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
@@ -5,7 +6,7 @@ import requests, json
 import os
 import logging
 from datetime import date, timedelta
-
+import translate
 
 def start(update, context):
     context.bot.send_message(chat_id=update.message.chat_id, text="Reichenbach is never an option!")
@@ -41,20 +42,32 @@ def mensa(update, context):
 
 
 def andre(update, context):
-    context.bot.send_message(chat_id=update.message.chat_id, text="HÃ¶hÃ¶hÃ¶ Reichenbach!")
+    context.bot.send_message(chat_id=update.message.chat_id, text="Höhöhö Reichenbach!")
 
 
-def dadJoke(update, context):
+def leon(update, context):
+    joke = dadJoke()
+    context.bot.send_message(chat_id=update.message.chat_id, text=joke)
+    
+
+def loen(update, context):
+    joke = dadJoke()
+    translator = translate.Translator(from_lang = 'en', to_lang = 'de')
+    translatedJoke = translator.translate(joke)
+    context.bot.send_message(chat_id=update.message.chat_id, text=translatedJoke)
+    
+
+def dadJoke():
     headers = {'Accept': 'text/plain '}
     resp = requests.get("https://icanhazdadjoke.com/", headers=headers)
     if not resp.ok:
-        context.bot.send_message(chat_id=update.message.chat_id, text="I failed miserably. Disgrace!")
-        return
-    context.bot.send_message(chat_id=update.message.chat_id, text=resp.text)
+        return "I failed miserably. Disgrace!"
+    return resp.text
 
 
 def maxime(update, context):
     context.bot.send_sticker(chat_id=update.message.chat_id, sticker="CAADBQADfAMAAukKyAPfAAFRgAuYdNoWBA")
+    
 
 def andrey(update, context):
     context.bot.send_message(chat_id=update.message.chat_id, text="11.00 Bois. Yeef!")
@@ -78,8 +91,11 @@ def main():
     andreHandler = CommandHandler('andre', andre)
     updater.dispatcher.add_handler(andreHandler)
 
-    dadJokeHandler = CommandHandler('leon', dadJoke)
-    updater.dispatcher.add_handler(dadJokeHandler)
+    leonHandler = CommandHandler('leon', leon)
+    updater.dispatcher.add_handler(leonHandler)
+
+    loenHandler = CommandHandler('loen', loen)
+    updater.dispatcher.add_handler(loenHandler)
 
     maximeHandler = CommandHandler('maxime', maxime)
     updater.dispatcher.add_handler(maximeHandler)
