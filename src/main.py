@@ -1,4 +1,4 @@
-# -*- encoding: iso-8859-15 -*-
+# -*- encoding: utf-8 -*-
 #!/bin/python
 
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
@@ -42,7 +42,7 @@ def mensa(update, context):
 
 
 def andre(update, context):
-    context.bot.send_message(chat_id=update.message.chat_id, text="Höhöhö Reichenbach!")
+    context.bot.send_message(chat_id=update.message.chat_id, text="HÃ¶hÃ¶hÃ¶ Reichenbach!")
 
 
 def leon(update, context):
