@@ -21,6 +21,7 @@ def echoSticker(update, context):
     sticker = update.message.sticker
     context.bot.send_sticker(chat_id=update.message.chat_id, sticker=sticker)
 
+
 def mensa(update, context):
     params = context.args
     if len(params) < 1:
@@ -49,14 +50,14 @@ def andre(update, context):
 def leon(update, context):
     joke = dadJoke()
     context.bot.send_message(chat_id=update.message.chat_id, text=joke)
-    
+
 
 def loen(update, context):
     joke = dadJoke()
-    translator = translate.Translator(from_lang = 'en', to_lang = 'de')
+    translator = translate.Translator(from_lang='en', to_lang='de')
     translatedJoke = translator.translate(joke)
     context.bot.send_message(chat_id=update.message.chat_id, text=translatedJoke)
-    
+
 
 def dadJoke():
     headers = {'Accept': 'text/plain '}
@@ -68,6 +69,7 @@ def dadJoke():
 
 def maxime(update, context):
     context.bot.send_sticker(chat_id=update.message.chat_id, sticker="CAADBQADfAMAAukKyAPfAAFRgAuYdNoWBA")
+
 
 def andrey(update, context):
     context.bot.send_message(chat_id=update.message.chat_id, text="11.00 Bois. Yeef!")
