@@ -5,7 +5,7 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 import requests, json
 import os
 import logging
-from datetime import date, timedelta
+from datetime import timedelta
 import translate
 
 
@@ -32,7 +32,7 @@ def mensa(update, context):
         except ValueError:
             context.bot.send_message(chat_id=update.message.chat_id, text="The first and only parameter has to be an integer value. Aborting.")
             return
-    day = date.today() + timedelta(days=daysToAdd)
+    day = update.message.date.date() + timedelta(days=daysToAdd)
     url = "https://openmensa.org/api/v2/canteens/79/days/" + day.strftime("%Y-%m-%d") + "/meals"
     resp = requests.get(url)
     if not resp.ok:
