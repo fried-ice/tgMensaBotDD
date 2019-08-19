@@ -1,6 +1,6 @@
 FROM python:alpine
 
-RUN ["apk", "add", "gcc", "musl-dev", "libffi-dev", "openssl-dev"]
+RUN ["apk", "add", "gcc", "musl-dev", "libffi-dev", "openssl-dev", "libxml2-dev", "libxslt-dev"]
 
 WORKDIR /app
 COPY requirements.txt .
