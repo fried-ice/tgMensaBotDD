@@ -7,6 +7,12 @@ import os
 import logging
 from datetime import timedelta
 import translate
+import random
+
+
+class NotifyUserException(Exception):
+    """Raised whenever an error needs to be propagated to the user"""
+    pass
 
 
 def start(update, context):
@@ -75,6 +81,49 @@ def andrey(update, context):
     context.bot.send_message(chat_id=update.message.chat_id, text="11.00 Bois. Yeef!")
 
 
+def getXkcd(id, rand):
+    resp = requests.get("https://xkcd.com/info.0.json")
+    if not resp.ok:
+        raise NotifyUserException("I failed miserably. Disgrace!")
+    jsonData = json.loads(resp.content)
+    upperLimit = jsonData["num"]
+
+    if rand:
+        id = random.randint(1, upperLimit)
+    elif id > upperLimit:
+        raise NotifyUserException("Id not in range. Maximum id currently is " + str(upperLimit) + ".")
+
+    resp = requests.get("https://xkcd.com/" + str(id) + "/info.0.json")
+    if not resp.ok:
+        raise NotifyUserException("I failed miserably. Disgrace!")
+
+    jsonData = json.loads(resp.content)
+    return (id, jsonData["img"], jsonData["title"])
+
+
+def xkcd(update, context):
+    params = context.args
+    rand = False
+    id = 0
+    if len(params) < 1:
+        rand = True
+    else:
+        try:
+            id = int(params[0])
+        except ValueError:
+            context.bot.send_message(chat_id=update.message.chat_id, text="The first and only parameter has to be a positive integer value greater than 0. Aborting.")
+            return
+        if id < 1:
+            context.bot.send_message(chat_id=update.message.chat_id, text="The first and only parameter has to be a positive integer value greater than 0. Aborting.")
+            return
+    try:
+        xkcd = getXkcd(id, rand)
+    except NotifyUserException as error:
+        context.bot.send_message(chat_id=update.message.chat_id, text=str(error))
+        return
+    context.bot.send_photo(chat_id=update.message.chat_id, photo=xkcd[1], caption=str(xkcd[0]) + " - " + xkcd[2])
+
+
 def main():
     logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
@@ -104,6 +153,9 @@ def main():
 
     andreyHandler = CommandHandler('andrey', andrey)
     updater.dispatcher.add_handler(andreyHandler)
+
+    xkcdHandler = CommandHandler('xkcd', xkcd)
+    updater.dispatcher.add_handler(xkcdHandler)
 
     echoHandlerText = MessageHandler(Filters.text, echoText)
     updater.dispatcher.add_handler(echoHandlerText)
