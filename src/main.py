@@ -8,6 +8,12 @@ import logging
 from datetime import timedelta
 import translate
 import random
+import praw
+
+
+REDDIT_BOT_ID = os.environ['REDDIT_BOT_ID']
+REDDIT_BOT_SECRET = os.environ['REDDIT_BOT_SECRET']
+REDDIT_USER_AGENT = os.environ['REDDIT_USER_AGENT']
 
 
 class NotifyUserException(Exception):
@@ -124,6 +130,51 @@ def xkcd(update, context):
     context.bot.send_photo(chat_id=update.message.chat_id, photo=xkcd[1], caption=str(xkcd[0]) + " - " + xkcd[2])
 
 
+def subredditImg(subreddit, offset):
+
+    imageFileEndings = [".png", ".jpg", ".jpeg", ".webp"]
+
+    reddit = praw.Reddit(client_id=REDDIT_BOT_ID, client_secret=REDDIT_BOT_SECRET, user_agent=REDDIT_USER_AGENT)
+
+    images = []
+
+    for post in reddit.subreddit(subreddit).hot(limit=5):
+        for ending in imageFileEndings:
+            if str(post.url).endswith(ending):
+                images.append(post.url)
+    return images
+
+
+def r(update, context):
+    params = context.args
+    offset = 0
+    if len(params) < 1:
+        context.bot.send_message(chat_id=update.message.chat_id, text="The first parameter has to be a string identifying the requested subreddit. Aborting.")
+        return
+    subreddit = params[0]
+    if len(params) > 1:
+        try:
+            offset = int(params[1])
+        except ValueError:
+            context.bot.send_message(chat_id=update.message.chat_id, text="The second parameter has to be a positive integer value. Aborting.")
+            return
+        if offset < 0:
+            context.bot.send_message(chat_id=update.message.chat_id, text="The second parameter has to be a positive integer value. Aborting.")
+            return
+
+    try:
+        images = subredditImg(subreddit, offset)
+    except Exception:
+        context.bot.send_message(chat_id=update.message.chat_id, text="Something went wrong internally. I am deeply sorry.")
+        return
+
+    if len(images) == 0:
+        context.bot.send_message(chat_id=update.message.chat_id, text="There are no images in the top 5 posts.")
+        return
+    for image in images:
+        context.bot.send_photo(chat_id=update.message.chat_id, photo=image)
+
+
 def main():
     logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
@@ -156,6 +207,9 @@ def main():
 
     xkcdHandler = CommandHandler('xkcd', xkcd)
     updater.dispatcher.add_handler(xkcdHandler)
+
+    redditImgHandler = CommandHandler('r', r)
+    updater.dispatcher.add_handler(redditImgHandler)
 
     echoHandlerText = MessageHandler(Filters.text, echoText)
     updater.dispatcher.add_handler(echoHandlerText)
