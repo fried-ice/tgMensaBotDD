@@ -79,6 +79,10 @@ def dadJoke():
     return resp.text
 
 
+def georg(update, context):
+    context.bot.send_message(chat_id=update.message.chat_id, text="https://wiki.archlinux.org/index.php/Installation_guide")
+
+
 def maxime(update, context):
     context.bot.send_sticker(chat_id=update.message.chat_id, sticker="CAADBQADfAMAAukKyAPfAAFRgAuYdNoWBA")
 
@@ -195,6 +199,9 @@ def main():
 
     leonHandler = CommandHandler('leon', leon)
     updater.dispatcher.add_handler(leonHandler)
+
+    georgHandler = CommandHandler('georg', georg)
+    updater.dispatcher.add_handler(georgHandler)
 
     loenHandler = CommandHandler('loen', loen)
     updater.dispatcher.add_handler(loenHandler)
