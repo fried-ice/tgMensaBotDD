@@ -133,6 +133,13 @@ def xkcd(update, context):
         return
     context.bot.send_photo(chat_id=update.message.chat_id, photo=xkcd[1], caption=str(xkcd[0]) + " - " + xkcd[2])
 
+def decision(update, context):
+    headers = {'Accept': 'text/plain '}
+    resp = requests.get("https://yesno.wtf/api/", headers=headers)
+    if not resp.ok:
+        raise NotifyUserException("oof")
+    data = json.loads(resp.text)
+    context.bot.send_animation(chat_id=update.message.chat_id, animation=data["image"], caption=data["answer"])
 
 def subredditImg(subreddit, offset):
 
@@ -214,6 +221,9 @@ def main():
 
     xkcdHandler = CommandHandler('xkcd', xkcd)
     updater.dispatcher.add_handler(xkcdHandler)
+
+    decisionHandler = CommandHandler('decision', decision)
+    updater.dispatcher.add_handler(decisionHandler)
 
     redditImgHandler = CommandHandler('r', r)
     updater.dispatcher.add_handler(redditImgHandler)
