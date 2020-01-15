@@ -139,8 +139,7 @@ def decision(update, context):
     if not resp.ok:
         raise NotifyUserException("oof")
     data = json.loads(resp.text)
-
-    return data["answer"]
+    context.bot.send_animation(chat_id=update.message.chat_id, animation=data["image"], caption=data["answer"])
 
 def subredditImg(subreddit, offset):
 
