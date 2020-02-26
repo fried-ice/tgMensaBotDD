@@ -4,6 +4,7 @@
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 import requests, json
 import os
+import time
 import logging
 from datetime import timedelta
 import translate
@@ -186,6 +187,13 @@ def r(update, context):
         context.bot.send_photo(chat_id=update.message.chat_id, photo=image)
 
 
+def cat(update, context):
+    context.bot.send_photo(
+        chat_id=update.message.chat_id,
+        photo="https://thiscatdoesnotexist.com?time=" + str(time.time()) + str(random.randint(1, 1024))
+    )
+
+
 def main():
     logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
@@ -233,6 +241,9 @@ def main():
 
     echoHandlerSticker = MessageHandler(Filters.sticker, echoSticker)
     updater.dispatcher.add_handler(echoHandlerSticker)
+
+    catHandler = CommandHandler('cat', cat)
+    updater.dispatcher.add_handler(catHandler)
 
     updater.start_webhook(listen="0.0.0.0", port=PORT, url_path=API_TOKEN)
     updater.bot.set_webhook(APP_ADDR + API_TOKEN)
