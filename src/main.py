@@ -4,6 +4,7 @@
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 import requests, json
 import os
+import time
 import logging
 from datetime import timedelta
 import translate
@@ -187,7 +188,10 @@ def r(update, context):
 
 
 def cat(update, context):
-    context.bot.send_photo(chat_id=update.message.chat_id, photo="https://thiscatdoesnotexist.com")
+    context.bot.send_photo(
+        chat_id=update.message.chat_id,
+        photo="https://thiscatdoesnotexist.com?time=" + str(time.time()) + str(random.randint(1, 1024))
+    )
 
 
 def main():
