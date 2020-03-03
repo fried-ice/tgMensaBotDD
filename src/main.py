@@ -194,6 +194,13 @@ def cat(update, context):
     )
 
 
+def person(update, context):
+    context.bot.send_photo(
+        chat_id=update.message.chat_id,
+        photo="https://thispersondoesnotexist.com?time=" + str(time.time()) + str(random.randint(1, 1024))
+    )
+
+
 def main():
     logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
@@ -244,6 +251,9 @@ def main():
 
     catHandler = CommandHandler('cat', cat)
     updater.dispatcher.add_handler(catHandler)
+
+    personHandler = CommandHandler('person', person)
+    updater.dispatcher.add_handler(personHandler)
 
     updater.start_webhook(listen="0.0.0.0", port=PORT, url_path=API_TOKEN)
     updater.bot.set_webhook(APP_ADDR + API_TOKEN)
