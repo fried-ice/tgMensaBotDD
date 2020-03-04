@@ -4,6 +4,7 @@
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 import requests, json
 import os
+import io
 import time
 import logging
 from datetime import timedelta
@@ -15,6 +16,7 @@ import praw
 REDDIT_BOT_ID = os.environ['REDDIT_BOT_ID']
 REDDIT_BOT_SECRET = os.environ['REDDIT_BOT_SECRET']
 REDDIT_USER_AGENT = os.environ['REDDIT_USER_AGENT']
+USER_AGENT_BROWSER = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Safari/537.36'
 
 
 class NotifyUserException(Exception):
@@ -194,6 +196,17 @@ def cat(update, context):
     )
 
 
+def person(update, context):
+    resp = requests.get("https://thispersondoesnotexist.com/image?time=" + str(time.time()) + str(random.randint(1, 1024)), headers={'User-Agent': 'USER_AGENT_BROWSER'})
+
+    if not resp.ok:
+        context.bot.send_message(chat_id=update.message.chat_id, text="Something went wrong internally. I am deeply sorry.")
+        return
+
+    with io.BytesIO(resp.content) as buf:
+        context.bot.send_photo(chat_id=update.message.chat_id, photo=buf)
+
+
 def main():
     logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
@@ -244,6 +257,9 @@ def main():
 
     catHandler = CommandHandler('cat', cat)
     updater.dispatcher.add_handler(catHandler)
+
+    personHandler = CommandHandler('person', person)
+    updater.dispatcher.add_handler(personHandler)
 
     updater.start_webhook(listen="0.0.0.0", port=PORT, url_path=API_TOKEN)
     updater.bot.set_webhook(APP_ADDR + API_TOKEN)
