@@ -18,6 +18,14 @@ REDDIT_BOT_SECRET = os.environ['REDDIT_BOT_SECRET']
 REDDIT_USER_AGENT = os.environ['REDDIT_USER_AGENT']
 USER_AGENT_BROWSER = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Safari/537.36'
 
+royalTitles = ["Lé", "Baron", "König", "Archlord", "Genius", "Ritter", "Curry", "Burger", "Mc"]
+firstFrag = ["Schm", "J", "Hans-J", "K", "G", "Gr", "B"]
+secondFrag = ["oerg", "öck", "öhhhrk", "öhrp", "egor"]
+thirdFrag = ["inger", "erino", "aroni", "us", "sell", "topus"]
+nobleAnnex = ["I.", "II.", "III.", "Royale", "dem Allmächtigen", "dem Weisen", "dem hochgradig Intelligenten"]
+
+wisdoms = ["Linux ist voll doof!", "Ich stehe immer um 7.00 Uhr auf!", "Tut schön viel Frischkäse in die Nudelsoße!", "Mensen um 11.00 Uhr ist eine super Sache!", "Ich habe WinRar gekauft!", "Für einen längeren XP-Supportzeitraum!", "Fasst meinen Laptopbildschirm an!", "Natürlich code ich dieses Feature für euch, ganz ohne Pull Request!", "Maxime ist ein toller Papa!", "Hirtenkäsepizza ist die beste!", "Sauerkraut ist doch ekelhaft!", "Mein Lieblingsbrowser ist ja der Internet Explorer!", "Rechtschreibfehler in Kommentaren? Voll okay!", "Party? Warum nicht bei mir zu Hause?", "Irgendwas mit dynamisch Parameter injecten!", "Wie war das mit den Speisezeiten?", "Ich kaufe nur bei Nvidia!", "Wer braucht schon Open Source..."]
+
 
 class NotifyUserException(Exception):
     """Raised whenever an error needs to be propagated to the user"""
@@ -207,6 +215,33 @@ def person(update, context):
         context.bot.send_photo(chat_id=update.message.chat_id, photo=buf)
 
 
+def wisdom(update, context):
+    wisdom = createWisdomString()
+    context.bot.send_message(chat_id=update.message.chat_id, text=wisdom)
+
+
+def createWisdomString():
+    optionalNoble = None
+    optionalAnnex = None
+
+    if bool(random.getrandbits(1)):
+        optionalNoble = random.choice(royalTitles)
+    if bool(random.getrandbits(1)):
+        optionalAnnex = random.choice(nobleAnnex)
+
+    mainBody = random.choice(firstFrag) + random.choice(secondFrag) + random.choice(thirdFrag)
+    output = "Die heutige Weisheit von "
+
+    if optionalNoble:
+        output += optionalNoble + " " + mainBody
+    else:
+        output += mainBody
+    if optionalAnnex:
+        output += " " + optionalAnnex 
+    output += ": " + random.choice(wisdoms)
+    return output
+
+
 def main():
     logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
@@ -260,6 +295,9 @@ def main():
 
     personHandler = CommandHandler('person', person)
     updater.dispatcher.add_handler(personHandler)
+
+    wisdomHandler = CommandHandler('wisdom', wisdom)
+    updater.dispatcher.add_handler(wisdomHandler)
 
     updater.start_webhook(listen="0.0.0.0", port=PORT, url_path=API_TOKEN)
     updater.bot.set_webhook(APP_ADDR + API_TOKEN)
