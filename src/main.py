@@ -255,6 +255,10 @@ def choose(update, context):
         context.bot.send_message(chat_id=update.message.chat_id, text=random.choice(params) + " shall be my answer!")
 
 
+def goerg(update, context):
+    context.bot.send_message(chat_id=update.message.chat_id, text="https://azure.microsoft.com/de-de/services/virtual-desktop/")
+
+
 def main():
     logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
@@ -314,6 +318,9 @@ def main():
 
     chooseHandler = CommandHandler('choose', choose)
     updater.dispatcher.add_handler(chooseHandler)
+
+    goergHandler = CommandHandler('goerg', goerg)
+    updater.dispatcher.add_handler(goergHandler)
 
     updater.start_webhook(listen="0.0.0.0", port=PORT, url_path=API_TOKEN)
     updater.bot.set_webhook(APP_ADDR + API_TOKEN)
