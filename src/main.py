@@ -237,7 +237,7 @@ def createWisdomString():
     else:
         output += mainBody
     if optionalAnnex:
-        output += " " + optionalAnnex 
+        output += " " + optionalAnnex
     output += ": " + random.choice(wisdoms)
     return output
 
