@@ -2,6 +2,7 @@
 # -*- encoding: utf-8 -*-
 
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, InlineQueryHandler
+import telegram as tg
 import requests
 import json
 import os
