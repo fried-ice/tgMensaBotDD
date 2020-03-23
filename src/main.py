@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 # -*- encoding: utf-8 -*-
 
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
-import requests, json
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, InlineQueryHandler
+import telegram as tg
+import requests
+import json
 import os
 import io
 import time
@@ -144,6 +146,7 @@ def xkcd(update, context):
         return
     context.bot.send_photo(chat_id=update.message.chat_id, photo=xkcd[1], caption=str(xkcd[0]) + " - " + xkcd[2])
 
+
 def decision(update, context):
     headers = {'Accept': 'text/plain '}
     resp = requests.get("https://yesno.wtf/api/", headers=headers)
@@ -152,15 +155,16 @@ def decision(update, context):
     data = json.loads(resp.text)
     context.bot.send_animation(chat_id=update.message.chat_id, animation=data["image"], caption=data["answer"])
 
-def subredditImg(subreddit, offset):
 
-    imageFileEndings = [".png", ".jpg", ".jpeg", ".webp"]
+def subredditImg(subreddit, offset=0, count=5):
+
+    imageFileEndings = [".png", ".jpg", ".jpeg", ".webp", ".gif"]
 
     reddit = praw.Reddit(client_id=REDDIT_BOT_ID, client_secret=REDDIT_BOT_SECRET, user_agent=REDDIT_USER_AGENT)
 
     images = []
 
-    for post in reddit.subreddit(subreddit).hot(limit=5):
+    for post in reddit.subreddit(subreddit).hot(limit=count):
         for ending in imageFileEndings:
             if str(post.url).endswith(ending):
                 images.append(post.url)
@@ -185,7 +189,7 @@ def r(update, context):
             return
 
     try:
-        images = subredditImg(subreddit, offset)
+        images = subredditImg(subreddit)
     except Exception:
         context.bot.send_message(chat_id=update.message.chat_id, text="Something went wrong internally. I am deeply sorry.")
         return
@@ -240,7 +244,7 @@ def createWisdomString():
         output += " " + optionalAnnex
     output += ": " + random.choice(wisdoms)
     return output
-
+  
 
 def choose(update, context):
     params = context.args
@@ -257,6 +261,23 @@ def choose(update, context):
 
 def goerg(update, context):
     context.bot.send_message(chat_id=update.message.chat_id, text="https://azure.microsoft.com/de-de/services/virtual-desktop/")
+    
+
+def inlineR(update, context):
+    query = update.inline_query.query
+    results = []
+    try:
+        images = subredditImg(query, count=40)
+    except Exception:
+        results.append(tg.InlineQueryResultArticle(0, "No", tg.InputTextMessageContent("No!")))
+    else:
+        if len(images) == 0:
+            results.append(tg.InlineQueryResultArticle(0, "No", "No!", ))
+        else:
+            for img in images:
+                results.append(tg.InlineQueryResultPhoto(img, img, img))
+    finally:
+        update.inline_query.answer(results)
 
 
 def main():
@@ -321,6 +342,9 @@ def main():
 
     goergHandler = CommandHandler('goerg', goerg)
     updater.dispatcher.add_handler(goergHandler)
+
+    inlineRedditHandler = InlineQueryHandler(inlineR)
+    updater.dispatcher.add_handler(inlineRedditHandler)
 
     updater.start_webhook(listen="0.0.0.0", port=PORT, url_path=API_TOKEN)
     updater.bot.set_webhook(APP_ADDR + API_TOKEN)
