@@ -257,10 +257,6 @@ def choose(update, context):
         return
     else:
         context.bot.send_message(chat_id=update.message.chat_id, text=random.choice(params) + " shall be my answer!")
-
-
-def goerg(update, context):
-    context.bot.send_message(chat_id=update.message.chat_id, text="https://azure.microsoft.com/de-de/services/virtual-desktop/")
     
 
 def inlineR(update, context):
@@ -339,9 +335,6 @@ def main():
 
     chooseHandler = CommandHandler('choose', choose)
     updater.dispatcher.add_handler(chooseHandler)
-
-    goergHandler = CommandHandler('goerg', goerg)
-    updater.dispatcher.add_handler(goergHandler)
 
     inlineRedditHandler = InlineQueryHandler(inlineR)
     updater.dispatcher.add_handler(inlineRedditHandler)
