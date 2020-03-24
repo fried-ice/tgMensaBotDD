@@ -63,9 +63,18 @@ def mensa(update, context):
     if not resp.ok:
         context.bot.send_message(chat_id=update.message.chat_id, text="I failed miserably. Disgrace!")
         return
+
     jsonData = json.loads(resp.content)
     for elem in jsonData:
-        context.bot.send_message(chat_id=update.message.chat_id, text=elem["name"])
+        list=elem["notes"]
+        isVeg = 0
+        for veg in list:
+            if "veg" in veg:
+                isVeg = 1
+                context.bot.send_message(chat_id=update.message.chat_id, text="*" + elem["name"] + "*", parse_mode="Markdown")
+                break
+        if isVeg is 0:
+            context.bot.send_message(chat_id=update.message.chat_id, text="_" + elem["name"] + "_", parse_mode = "Markdown")
 
 
 def andre(update, context):
