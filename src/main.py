@@ -244,7 +244,7 @@ def createWisdomString():
         output += " " + optionalAnnex
     output += ": " + random.choice(wisdoms)
     return output
-  
+
 
 def choose(update, context):
     params = context.args
