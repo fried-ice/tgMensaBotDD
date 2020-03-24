@@ -246,6 +246,19 @@ def createWisdomString():
     return output
 
 
+def choose(update, context):
+    params = context.args
+
+    if len(params) < 1:
+        context.bot.send_message(chat_id=update.message.chat_id, text="You know, I can't choose if there is nothing to choose from. Wise words!")
+        return
+    elif len(params) == 1:
+        context.bot.send_message(chat_id=update.message.chat_id, text="How the hell am I supposed to choose when only value is entered? Gosh.")
+        return
+    else:
+        context.bot.send_message(chat_id=update.message.chat_id, text=random.choice(params) + " shall be my answer!")
+    
+
 def inlineR(update, context):
     query = update.inline_query.query
     results = []
@@ -319,6 +332,9 @@ def main():
 
     wisdomHandler = CommandHandler('wisdom', wisdom)
     updater.dispatcher.add_handler(wisdomHandler)
+
+    chooseHandler = CommandHandler('choose', choose)
+    updater.dispatcher.add_handler(chooseHandler)
 
     inlineRedditHandler = InlineQueryHandler(inlineR)
     updater.dispatcher.add_handler(inlineRedditHandler)
