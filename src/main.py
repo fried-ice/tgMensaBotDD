@@ -71,10 +71,10 @@ def mensa(update, context):
         for veg in list:
             if "veg" in veg:
                 isVeg = 1
-                context.bot.send_message(chat_id=update.message.chat_id, text="*" + elem["name"] + "*", parse_mode="Markdown")
+                context.bot.send_message(chat_id=update.message.chat_id, text="*"+elem["name"]+"*", parse_mode="Markdown")
                 break
         if isVeg is 0:
-            context.bot.send_message(chat_id=update.message.chat_id, text="_" + elem["name"] + "_", parse_mode = "Markdown")
+            context.bot.send_message(chat_id=update.message.chat_id, text="_"+elem["name"]+ "_", parse_mode="Markdown")
 
 
 def andre(update, context):
