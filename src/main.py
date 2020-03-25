@@ -65,7 +65,11 @@ def mensa(update, context):
         return
     jsonData = json.loads(resp.content)
     for elem in jsonData:
-        context.bot.send_message(chat_id=update.message.chat_id, text=elem["name"])
+        mealNotes = elem["notes"]
+        if any("vegetarisch" in i for i in mealNotes) or any("vegan" in i for i in mealNotes):
+            context.bot.send_message(chat_id=update.message.chat_id, text="*" + elem["name"] + "*", parse_mode="Markdown")
+        else:
+            context.bot.send_message(chat_id=update.message.chat_id, text="_" + elem["name"] + "_", parse_mode="Markdown")
 
 
 def andre(update, context):
