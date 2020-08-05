@@ -212,6 +212,13 @@ def cat(update, context):
     )
 
 
+def horse(update, context):
+    context.bot.send_photo(
+        chat_id=update.message.chat_id,
+        photo="https://thishorsedoesnotexist.com?time=" + str(time.time()) + str(random.randint(1, 1024))
+    )
+
+
 def person(update, context):
     resp = requests.get("https://thispersondoesnotexist.com/image?time=" + str(time.time()) + str(random.randint(1, 1024)), headers={'User-Agent': 'USER_AGENT_BROWSER'})
 
@@ -335,6 +342,9 @@ def main():
 
     catHandler = CommandHandler('cat', cat)
     updater.dispatcher.add_handler(catHandler)
+
+    horseHandler = CommandHandler('horse', horse)
+    updater.dispatcher.add_handler(horseHandler)
 
     personHandler = CommandHandler('person', person)
     updater.dispatcher.add_handler(personHandler)
