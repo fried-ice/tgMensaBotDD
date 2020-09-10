@@ -28,6 +28,8 @@ nobleAnnex = ["I.", "II.", "III.", "Royale", "dem Allmächtigen", "dem Weisen", 
 
 wisdoms = ["Linux ist voll doof!", "Ich stehe immer um 7.00 Uhr auf!", "Tut schön viel Frischkäse in die Nudelsoße!", "Mensen um 11.00 Uhr ist eine super Sache!", "Ich habe WinRar gekauft!", "Für einen längeren XP-Supportzeitraum!", "Fasst meinen Laptopbildschirm an!", "Natürlich code ich dieses Feature für euch, ganz ohne Pull Request!", "Maxime ist ein toller Papa!", "Hirtenkäsepizza ist die beste!", "Sauerkraut ist doch ekelhaft!", "Mein Lieblingsbrowser ist ja der Internet Explorer!", "Rechtschreibfehler in Kommentaren? Voll okay!", "Party? Warum nicht bei mir zu Hause?", "Irgendwas mit dynamisch Parameter injecten!", "Wie war das mit den Speisezeiten?", "Ich kaufe nur bei Nvidia!", "Wer braucht schon Open Source...", "KöckOS? Kommt noch diese Woche raus!", "Die besten Witze sind Deine-Mutter-Witze!", "Mein Lieblings-OS ist iOS!", "Ein Halloumiburger ist eine eigenständige Mahlzeit!", "Ich kaufe mir ein MacBook!", "Ich fange wieder mit Medieninformatik an!", "Ich liebe Ubuntu!", "Verschlüsselung ist doch Unsinn!", "Machen wir alle ne gemeinsame WG auf?"]
 
+haes = ["HÄ?", "VALORANT?", "WIE?", "WANN?", "WO?", "Geller muss erst noch zu Ende essen!", "???", "*Random Katzenbild*", "Erstmal Valorant!", "ICH HASSE EUCH ALLE!", "HÄÄÄ?", "ICH ARBEITE!", "ICH HASSE DEN", "FUCK YOU", "WIRKLICH", "BITTE", "Natürlich ist das gelb!", "Es gibt Kuchen!", "Wir haben wieder viel zu viel Lasagne!"]
+
 
 class NotifyUserException(Exception):
     """Raised whenever an error needs to be propagated to the user"""
@@ -106,6 +108,10 @@ def maxime(update, context):
 
 def andrey(update, context):
     context.bot.send_message(chat_id=update.message.chat_id, text="11.00 Bois. Yeef!")
+
+
+def steffuu(update, context):
+    context.bot.send_message(chat_id=update.message.chat_id, text=random.choice(haes))
 
 
 def getXkcd(id, rand):
@@ -273,7 +279,7 @@ def choose(update, context):
         return
     else:
         context.bot.send_message(chat_id=update.message.chat_id, text=random.choice(params) + " shall be my answer!")
-    
+
 
 def inlineR(update, context):
     query = update.inline_query.query
@@ -324,6 +330,9 @@ def main():
 
     andreyHandler = CommandHandler('andrey', andrey)
     updater.dispatcher.add_handler(andreyHandler)
+
+    steffuuHandler = CommandHandler('steffuu', steffuu)
+    updater.dispatcher.add_handler(steffuuHandler)
 
     xkcdHandler = CommandHandler('xkcd', xkcd)
     updater.dispatcher.add_handler(xkcdHandler)
