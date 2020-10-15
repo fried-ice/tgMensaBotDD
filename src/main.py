@@ -51,7 +51,7 @@ def mensa(update, context):
             context.bot.send_message(chat_id=update.message.chat_id, text="The first and only parameter has to be an integer value. Aborting.")
             return
     day = update.message.date.date() + timedelta(days=daysToAdd)
-    url = "https://openmensa.org/api/v2/canteens/79/days/" + day.strftime("%Y-%m-%d") + "/meals"
+    url = "https://api.studentenwerk-dresden.de/openmensa/v2/canteens/4/days/" + day.strftime("%Y-%m-%d") + "/meals"
     resp = requests.get(url)
     if not resp.ok:
         context.bot.send_message(chat_id=update.message.chat_id, text="I failed miserably. Disgrace!")
@@ -59,10 +59,17 @@ def mensa(update, context):
     jsonData = json.loads(resp.content)
     for elem in jsonData:
         mealNotes = elem["notes"]
-        if "vegetarisch" in mealNotes or "vegan" in mealNotes:
-            context.bot.send_message(chat_id=update.message.chat_id, text="*" + elem["name"] + "*", parse_mode="Markdown")
+        markdownHighlightChar = "_"
+        for note in mealNotes:
+            if "vegetarisch" in note or "vegan" in note:
+                markdownHighlightChar = "*"
+
+        imgUrl = elem["image"].lstrip("/") # For some reason, image URLs are prefixed with 2 leading slashes, but no protocol, remove them
+        # Do not send placeholder images
+        if imgUrl.endswith("studentenwerk-dresden-lieber-mensen-gehen.jpg"):
+            context.bot.send_message(chat_id=update.message.chat_id, text=markdownHighlightChar + elem["name"] + markdownHighlightChar, parse_mode="Markdown")
         else:
-            context.bot.send_message(chat_id=update.message.chat_id, text="_" + elem["name"] + "_", parse_mode="Markdown")
+            context.bot.send_photo(chat_id=update.message.chat_id, photo=imgUrl, caption=markdownHighlightChar + elem["name"] + markdownHighlightChar, parse_mode="Markdown")
 
 
 def andre(update, context):
