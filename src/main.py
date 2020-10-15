@@ -40,15 +40,6 @@ def start(update, context):
     context.bot.send_message(chat_id=update.message.chat_id, text="Reichenbach is never an option!")
 
 
-def echoText(update, context):
-    context.bot.send_message(chat_id=update.message.chat_id, text=update.message.text)
-
-
-def echoSticker(update, context):
-    sticker = update.message.sticker
-    context.bot.send_sticker(chat_id=update.message.chat_id, sticker=sticker)
-
-
 def mensa(update, context):
     params = context.args
     if len(params) < 1:
@@ -342,12 +333,6 @@ def main():
 
     redditImgHandler = CommandHandler('r', r)
     updater.dispatcher.add_handler(redditImgHandler)
-
-    echoHandlerText = MessageHandler(Filters.text, echoText)
-    updater.dispatcher.add_handler(echoHandlerText)
-
-    echoHandlerSticker = MessageHandler(Filters.sticker, echoSticker)
-    updater.dispatcher.add_handler(echoHandlerSticker)
 
     catHandler = CommandHandler('cat', cat)
     updater.dispatcher.add_handler(catHandler)
