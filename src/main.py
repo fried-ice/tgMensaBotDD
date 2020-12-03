@@ -12,6 +12,7 @@ import logging
 from datetime import timedelta
 import translate
 import random
+from bs4 import BeautifulSoup
 import praw
 
 
@@ -214,7 +215,20 @@ def cat(update, context):
         chat_id=update.message.chat_id,
         photo="https://thiscatdoesnotexist.com?time=" + str(time.time()) + str(random.randint(1, 1024))
     )
+def snack(update, context):
+    snack = requests.get("https://thissnackdoesnotexist.com/?time=" + str(time.time()) + str(random.randint(1, 1024)), headers={'User-Agent': 'USER_AGENT_BROWSER'})
+    if not snack.ok:
+        context.bot.send_message(chat_id=update.message.chat_id, text="Something went wrong internally. I am deeply sorry.")
+        return
 
+    soup = BeautifulSoup(snack.text,'html.parser')
+    text = soup.find('h1').text
+    pictureUrl = soup.find('div').attrs.get('style').split("(", 1)[1].split(")")[0]
+    context.bot.send_photo(
+        chat_id=update.message.chat_id,
+        photo=pictureUrl,
+        caption = text
+    )
 
 def horse(update, context):
     context.bot.send_photo(
@@ -343,6 +357,9 @@ def main():
 
     catHandler = CommandHandler('cat', cat)
     updater.dispatcher.add_handler(catHandler)
+
+    snackHandler = CommandHandler('snack', snack)
+    updater.dispatcher.add_handler(snackHandler)
 
     horseHandler = CommandHandler('horse', horse)
     updater.dispatcher.add_handler(horseHandler)
