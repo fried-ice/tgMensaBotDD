@@ -215,6 +215,8 @@ def cat(update, context):
         chat_id=update.message.chat_id,
         photo="https://thiscatdoesnotexist.com?time=" + str(time.time()) + str(random.randint(1, 1024))
     )
+
+
 def snack(update, context):
     snack = requests.get("https://thissnackdoesnotexist.com/?time=" + str(time.time()) + str(random.randint(1, 1024)), headers={'User-Agent': 'USER_AGENT_BROWSER'})
     if not snack.ok:
@@ -229,6 +231,7 @@ def snack(update, context):
         photo=pictureUrl,
         caption = text
     )
+
 
 def horse(update, context):
     context.bot.send_photo(
