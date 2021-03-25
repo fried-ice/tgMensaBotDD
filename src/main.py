@@ -12,6 +12,7 @@ import logging
 from datetime import timedelta
 import translate
 import random
+from bs4 import BeautifulSoup
 import praw
 
 
@@ -28,7 +29,7 @@ nobleAnnex = ["I.", "II.", "III.", "Royale", "dem Allmächtigen", "dem Weisen", 
 
 wisdoms = ["Linux ist voll doof!", "Ich stehe immer um 7.00 Uhr auf!", "Tut schön viel Frischkäse in die Nudelsoße!", "Mensen um 11.00 Uhr ist eine super Sache!", "Ich habe WinRar gekauft!", "Für einen längeren XP-Supportzeitraum!", "Fasst meinen Laptopbildschirm an!", "Natürlich code ich dieses Feature für euch, ganz ohne Pull Request!", "Maxime ist ein toller Papa!", "Hirtenkäsepizza ist die beste!", "Sauerkraut ist doch ekelhaft!", "Mein Lieblingsbrowser ist ja der Internet Explorer!", "Rechtschreibfehler in Kommentaren? Voll okay!", "Party? Warum nicht bei mir zu Hause?", "Irgendwas mit dynamisch Parameter injecten!", "Wie war das mit den Speisezeiten?", "Ich kaufe nur bei Nvidia!", "Wer braucht schon Open Source...", "KöckOS? Kommt noch diese Woche raus!", "Die besten Witze sind Deine-Mutter-Witze!", "Mein Lieblings-OS ist iOS!", "Ein Halloumiburger ist eine eigenständige Mahlzeit!", "Ich kaufe mir ein MacBook!", "Ich fange wieder mit Medieninformatik an!", "Ich liebe Ubuntu!", "Verschlüsselung ist doch Unsinn!", "Machen wir alle ne gemeinsame WG auf?"]
 
-haes = ["HÄ?", "VALORANT?", "WIE", "WANN", "WO", "Geller muss erst noch zu Ende essen!", "???", "*Random Katzenbild*", "Erstmal Valorant!", "ICH HASSE EUCH ALLE", "HÄÄÄ", "ICH ARBEITE", "ICH HASSE DEN", "FUCK YOU", "WIRKLICH", "BITTE", "Natürlich ist das gelb!", "Es gibt Kuchen!", "Wir haben wieder viel zu viel Lasagne!", "Oke", "WAS", "WAS MEINST DU", "WAS WILLST DU DENN JETZT SCHON WIEDER", "Alter", "Wirst schon sehen", "Denk nach du Schwamm", "Stop", "NICHT COOL", "TROLL NICHT RUM", "Uff", "AAAAARGH", "Kann den jemand kicken?", "DU HAST NUR ANGST VOR MIR", "EKELHAFT", "ICH HASSE ALLES", "WOFÜR", "ICH BIN IMMER SO", "KUCHEN", "LASAGNE", "SCHANDE", "WARUM ICH", "ICH LIEBE ARBEITEN", "ICH HASSE UNPÜNKTLICHKEIT", "IDIOT", "HEY", "WO SEID IHR", "WAS SONST", "KIBA", "HAHA", "VERSTEHT IHR DAS NICHT", "SEID IHR DUMM ODER WAS", "WTF", "RED DEUTSCH MIT MIR", "OMG", "LOL", ":)", "MIR IST LANGWEILIG", "ALS OB IHR ALLE SCHON SCHLAFT", "HALLO", "WEIß ICH NICHT", "WER DENKT SICH DAS AUS", "ICH SPRING LIEBER AUS DEM FENSTER", "NE"]
+haes = ["HÄ?", "APEX?", "OVERWATCH?", "AMONG US?", "WIE", "WANN", "WO", "Geller muss erst noch zu Ende essen!", "???", "*Random Katzenbild*", "APEX JETZT!", "ZOCKEN JETZT!", "ICH HASSE EUCH ALLE", "HÄÄÄ", "ICH ARBEITE", "ICH HASSE DEN", "FUCK YOU", "WIRKLICH", "BITTE", "Natürlich ist das gelb!", "Es gibt Kuchen!", "Wir haben wieder viel zu viel Lasagne!", "Oke", "WAS", "WAS MEINST DU", "WAS WILLST DU DENN JETZT SCHON WIEDER", "Alter", "Wirst schon sehen", "Denk nach du Schwamm", "Stop", "NICHT COOL", "TROLL NICHT RUM", "Uff", "AAAAARGH", "Kann den jemand kicken?", "DU HAST NUR ANGST VOR MIR", "EKELHAFT", "ICH HASSE ALLES", "WOFÜR", "ICH BIN IMMER SO", "KUCHEN", "LASAGNE", "SCHANDE", "WARUM ICH", "ICH LIEBE ARBEITEN", "ICH HASSE UNPÜNKTLICHKEIT", "IDIOT", "HEY", "WO SEID IHR", "WAS SONST", "KIBA", "HAHA", "VERSTEHT IHR DAS NICHT", "SEID IHR DUMM ODER WAS", "WTF", "RED DEUTSCH MIT MIR", "OMG", "LOL", ":)", "MIR IST LANGWEILIG", "ALS OB IHR ALLE SCHON SCHLAFT", "HALLO", "WEIß ICH NICHT", "WER DENKT SICH DAS AUS", "ICH SPRING LIEBER AUS DEM FENSTER", "NE", "SCHEISS AUTOKORREKTUR"]
 
 
 class NotifyUserException(Exception):
@@ -38,15 +39,6 @@ class NotifyUserException(Exception):
 
 def start(update, context):
     context.bot.send_message(chat_id=update.message.chat_id, text="Reichenbach is never an option!")
-
-
-def echoText(update, context):
-    context.bot.send_message(chat_id=update.message.chat_id, text=update.message.text)
-
-
-def echoSticker(update, context):
-    sticker = update.message.sticker
-    context.bot.send_sticker(chat_id=update.message.chat_id, sticker=sticker)
 
 
 def mensa(update, context):
@@ -60,7 +52,7 @@ def mensa(update, context):
             context.bot.send_message(chat_id=update.message.chat_id, text="The first and only parameter has to be an integer value. Aborting.")
             return
     day = update.message.date.date() + timedelta(days=daysToAdd)
-    url = "https://openmensa.org/api/v2/canteens/79/days/" + day.strftime("%Y-%m-%d") + "/meals"
+    url = "https://api.studentenwerk-dresden.de/openmensa/v2/canteens/4/days/" + day.strftime("%Y-%m-%d") + "/meals"
     resp = requests.get(url)
     if not resp.ok:
         context.bot.send_message(chat_id=update.message.chat_id, text="I failed miserably. Disgrace!")
@@ -68,10 +60,17 @@ def mensa(update, context):
     jsonData = json.loads(resp.content)
     for elem in jsonData:
         mealNotes = elem["notes"]
-        if "vegetarisch" in mealNotes or "vegan" in mealNotes:
-            context.bot.send_message(chat_id=update.message.chat_id, text="*" + elem["name"] + "*", parse_mode="Markdown")
+        markdownHighlightChar = "_"
+        for note in mealNotes:
+            if "vegetarisch" in note or "vegan" in note:
+                markdownHighlightChar = "*"
+
+        imgUrl = elem["image"].lstrip("/") # For some reason, image URLs are prefixed with 2 leading slashes, but no protocol, remove them
+        # Do not send placeholder images
+        if imgUrl.endswith("studentenwerk-dresden-lieber-mensen-gehen.jpg"):
+            context.bot.send_message(chat_id=update.message.chat_id, text=markdownHighlightChar + elem["name"] + markdownHighlightChar, parse_mode="Markdown")
         else:
-            context.bot.send_message(chat_id=update.message.chat_id, text="_" + elem["name"] + "_", parse_mode="Markdown")
+            context.bot.send_photo(chat_id=update.message.chat_id, photo=imgUrl, caption=markdownHighlightChar + elem["name"] + markdownHighlightChar, parse_mode="Markdown")
 
 
 def andre(update, context):
@@ -218,6 +217,22 @@ def cat(update, context):
     )
 
 
+def snack(update, context):
+    snack = requests.get("https://thissnackdoesnotexist.com/?time=" + str(time.time()) + str(random.randint(1, 1024)), headers={'User-Agent': 'USER_AGENT_BROWSER'})
+    if not snack.ok:
+        context.bot.send_message(chat_id=update.message.chat_id, text="Something went wrong internally. I am deeply sorry.")
+        return
+
+    soup = BeautifulSoup(snack.text,'html.parser')
+    text = soup.find('h1').text
+    pictureUrl = soup.find('div').attrs.get('style').split("(", 1)[1].split(")")[0]
+    context.bot.send_photo(
+        chat_id=update.message.chat_id,
+        photo=pictureUrl,
+        caption = text
+    )
+
+
 def horse(update, context):
     context.bot.send_photo(
         chat_id=update.message.chat_id,
@@ -343,14 +358,11 @@ def main():
     redditImgHandler = CommandHandler('r', r)
     updater.dispatcher.add_handler(redditImgHandler)
 
-    echoHandlerText = MessageHandler(Filters.text, echoText)
-    updater.dispatcher.add_handler(echoHandlerText)
-
-    echoHandlerSticker = MessageHandler(Filters.sticker, echoSticker)
-    updater.dispatcher.add_handler(echoHandlerSticker)
-
     catHandler = CommandHandler('cat', cat)
     updater.dispatcher.add_handler(catHandler)
+
+    snackHandler = CommandHandler('snack', snack)
+    updater.dispatcher.add_handler(snackHandler)
 
     horseHandler = CommandHandler('horse', horse)
     updater.dispatcher.add_handler(horseHandler)
