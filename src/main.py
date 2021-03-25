@@ -210,6 +210,17 @@ def r(update, context):
         context.bot.send_photo(chat_id=update.message.chat_id, photo=image)
 
 
+def random_subreddit(update, context):
+    resp = requests.get("https://reddit.com/r/random.json", headers={'User-Agent': 'USER_AGENT_BROWSER'})
+    if not resp.ok:
+        context.bot.send_message(chat_id=update.message.chat_id, text="Something went wrong internally. I am deeply sorry.")
+        return
+    sub_json = resp.json()
+    sub = sub_json["data"]["children"][0]["data"]["subreddit"]
+    context.bot.send_message(chat_id=update.message.chat_id, text="Subreddit Title: " + sub)
+    subredditImg(sub)
+
+
 def cat(update, context):
     context.bot.send_photo(
         chat_id=update.message.chat_id,
@@ -357,6 +368,9 @@ def main():
 
     redditImgHandler = CommandHandler('r', r)
     updater.dispatcher.add_handler(redditImgHandler)
+
+    randomSubredditHandler = CommandHandler("random_subreddit", random_subreddit)
+    updater.dispatcher.add_handler(randomSubredditHandler)
 
     catHandler = CommandHandler('cat', cat)
     updater.dispatcher.add_handler(catHandler)
