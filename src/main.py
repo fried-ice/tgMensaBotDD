@@ -218,7 +218,18 @@ def random_subreddit(update, context):
     sub_json = resp.json()
     sub = sub_json["data"]["children"][0]["data"]["subreddit"]
     context.bot.send_message(chat_id=update.message.chat_id, text="Subreddit Title: " + sub)
-    subredditImg(sub)
+    try:
+        images = subredditImg(sub)
+    except Exception:
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text="Something went wrong internally. I am deeply sorry.")
+        return
+
+    if len(images) == 0:
+        context.bot.send_message(chat_id=update.message.chat_id, text="There are no images in the top 5 posts.")
+        return
+    for image in images:
+        context.bot.send_photo(chat_id=update.message.chat_id, photo=image)
 
 
 def cat(update, context):
