@@ -14,11 +14,12 @@ import translate
 import random
 from bs4 import BeautifulSoup
 import praw
+import sys
 
 
-REDDIT_BOT_ID = os.environ['REDDIT_BOT_ID']
-REDDIT_BOT_SECRET = os.environ['REDDIT_BOT_SECRET']
-REDDIT_USER_AGENT = os.environ['REDDIT_USER_AGENT']
+REDDIT_BOT_ID = ''
+REDDIT_BOT_SECRET = ''
+REDDIT_USER_AGENT = ''
 USER_AGENT_BROWSER = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Safari/537.36'
 
 royalTitles = ["Lé", "Baron", "König", "Archlord", "Genius", "Ritter", "Curry", "Burger", "Mc", "Doktor", "Gentoomaster", "Chef", "Lead Developer"]
@@ -314,12 +315,18 @@ def inlineR(update, context):
 
 
 def main():
+    polling_enable = False
+    reddit_enable = True
+
+    for i, arg in enumerate(sys.argv):
+        if arg == "-p" or arg == "--poll":
+            polling_enable = True
+        if arg == "--no-reddit":
+            reddit_enable = False
+
     logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
     API_TOKEN = os.environ['TELEGRAM_APITOKEN']
-    APP_ADDR = os.environ['APP_ADDRESS']
-    PORT = int(os.environ.get('PORT', '8443'))
-
     updater = Updater(token=API_TOKEN, use_context=True)
 
     startHandler = CommandHandler('start', start)
@@ -355,9 +362,6 @@ def main():
     decisionHandler = CommandHandler('decision', decision)
     updater.dispatcher.add_handler(decisionHandler)
 
-    redditImgHandler = CommandHandler('r', r)
-    updater.dispatcher.add_handler(redditImgHandler)
-
     catHandler = CommandHandler('cat', cat)
     updater.dispatcher.add_handler(catHandler)
 
@@ -376,12 +380,32 @@ def main():
     chooseHandler = CommandHandler('choose', choose)
     updater.dispatcher.add_handler(chooseHandler)
 
-    inlineRedditHandler = InlineQueryHandler(inlineR)
-    updater.dispatcher.add_handler(inlineRedditHandler)
+    if reddit_enable:
+        global REDDIT_BOT_ID
+        REDDIT_BOT_ID = os.environ['REDDIT_BOT_ID']
 
-    updater.start_webhook(listen="0.0.0.0", port=PORT, url_path=API_TOKEN)
-    updater.bot.set_webhook(APP_ADDR + API_TOKEN)
-    updater.idle()
+        global REDDIT_BOT_SECRET
+        REDDIT_BOT_SECRET = os.environ['REDDIT_BOT_SECRET']
+
+        global REDDIT_USER_AGENT
+        REDDIT_USER_AGENT = os.environ['REDDIT_USER_AGENT']
+
+        redditImgHandler = CommandHandler('r', r)
+        updater.dispatcher.add_handler(redditImgHandler)
+
+        inlineRedditHandler = InlineQueryHandler(inlineR)
+        updater.dispatcher.add_handler(inlineRedditHandler)
+
+    if polling_enable:
+        updater.start_polling()
+        updater.idle()
+
+    else:
+        APP_ADDR = os.environ['APP_ADDRESS']
+        PORT = int(os.environ.get('PORT', '8443'))
+        updater.start_webhook(listen="0.0.0.0", port=PORT, url_path=API_TOKEN)
+        updater.bot.set_webhook(APP_ADDR + API_TOKEN)
+        updater.idle()
 
 
 if __name__ == "__main__":
