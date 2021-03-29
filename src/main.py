@@ -181,6 +181,20 @@ def subredditImg(subreddit, offset=0, count=5):
     return images
 
 
+def sendSubredditImages(subreddit_display_name, update, context):
+    try:
+        images = subredditImg(subreddit_display_name)
+    except Exception:
+        context.bot.send_message(chat_id=update.message.chat_id, text="Something went wrong internally. I am deeply sorry.")
+        return
+
+    if len(images) == 0:
+        context.bot.send_message(chat_id=update.message.chat_id, text="There are no images in the top 5 posts.")
+        return
+    for image in images:
+        context.bot.send_photo(chat_id=update.message.chat_id, photo=image)
+
+
 def r(update, context):
     params = context.args
     offset = 0
@@ -198,17 +212,15 @@ def r(update, context):
             context.bot.send_message(chat_id=update.message.chat_id, text="The second parameter has to be a positive integer value. Aborting.")
             return
 
-    try:
-        images = subredditImg(subreddit)
-    except Exception:
-        context.bot.send_message(chat_id=update.message.chat_id, text="Something went wrong internally. I am deeply sorry.")
-        return
+    sendSubredditImages(subreddit, update, context)
 
-    if len(images) == 0:
-        context.bot.send_message(chat_id=update.message.chat_id, text="There are no images in the top 5 posts.")
-        return
-    for image in images:
-        context.bot.send_photo(chat_id=update.message.chat_id, photo=image)
+
+def rr(update, context):
+    reddit = praw.Reddit(client_id=REDDIT_BOT_ID, client_secret=REDDIT_BOT_SECRET, user_agent=REDDIT_USER_AGENT)
+    sub = reddit.random_subreddit(nsfw=False)
+    sub_name = sub.display_name
+    context.bot.send_message(chat_id=update.message.chat_id, text="Random subreddit: \"" + sub_name + "\"")
+    sendSubredditImages(sub_name, update, context)
 
 
 def cat(update, context):
@@ -392,6 +404,9 @@ def main():
 
         redditImgHandler = CommandHandler('r', r)
         updater.dispatcher.add_handler(redditImgHandler)
+
+        redditRandomHandler = CommandHandler('rr', rr)
+        updater.dispatcher.add_handler(redditRandomHandler)
 
         inlineRedditHandler = InlineQueryHandler(inlineR)
         updater.dispatcher.add_handler(inlineRedditHandler)
