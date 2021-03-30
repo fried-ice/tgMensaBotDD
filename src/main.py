@@ -192,7 +192,13 @@ def sendSubredditImages(subreddit_display_name, update, context):
         context.bot.send_message(chat_id=update.message.chat_id, text="There are no images in the top 5 posts.")
         return
     for image in images:
-        context.bot.send_photo(chat_id=update.message.chat_id, photo=image.url, caption=image.title)
+        variants = image.preview['images'][0]['variants']
+        if "obfuscated" in variants:
+            button = tg.InlineKeyboardButton("view", image.url)
+            keyboard = tg.InlineKeyboardMarkup([[button]])
+            context.bot.send_photo(chat_id=update.message.chat_id, photo=variants['obfuscated']['resolutions'][0]['url'], caption=image.title, reply_markup=keyboard)
+        else:
+            context.bot.send_photo(chat_id=update.message.chat_id, photo=image.url, caption=image.title)
 
 
 def r(update, context):
