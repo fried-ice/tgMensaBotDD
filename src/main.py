@@ -177,7 +177,7 @@ def subredditImg(subreddit, offset=0, count=5):
     for post in reddit.subreddit(subreddit).hot(limit=count):
         for ending in imageFileEndings:
             if str(post.url).endswith(ending):
-                images.append(post.url)
+                images.append(post)
     return images
 
 
@@ -192,7 +192,7 @@ def sendSubredditImages(subreddit_display_name, update, context):
         context.bot.send_message(chat_id=update.message.chat_id, text="There are no images in the top 5 posts.")
         return
     for image in images:
-        context.bot.send_photo(chat_id=update.message.chat_id, photo=image)
+        context.bot.send_photo(chat_id=update.message.chat_id, photo=image.url, caption=image.title)
 
 
 def r(update, context):
