@@ -24,7 +24,7 @@ USER_AGENT_BROWSER = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML,
 
 REDDIT_IMAGE_FILE_ENDINGS = [".png", ".jpg", ".jpeg", ".webp"]
 REDDIT_VIDEO_SITES = ["youtu.be", "youtube.com", "v.redd.it"]
-REDDIT_ANIMATION_FILE_ENDINGS = [".gif", ".gifv"]
+REDDIT_ANIMATION_FILE_ENDINGS = [".gif"]
 
 royalTitles = ["Lé", "Baron", "König", "Archlord", "Genius", "Ritter", "Curry", "Burger", "Mc", "Doktor", "Gentoomaster", "Chef", "Lead Developer", "Sensei"]
 firstFrag = ["Schm", "J", "Hans-J", "K", "G", "Gr", "B", "Str", "Kr", "Rask", "Sch"]
