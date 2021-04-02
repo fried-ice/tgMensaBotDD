@@ -24,6 +24,7 @@ USER_AGENT_BROWSER = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML,
 
 REDDIT_IMAGE_FILE_ENDINGS = [".png", ".jpg", ".jpeg", ".webp"]
 REDDIT_VIDEO_SITES = ["youtu.be", "youtube.com", "v.redd.it"]
+REDDIT_ANIMATION_FILE_ENDINGS = [".gif", ".gifv"]
 
 royalTitles = ["Lé", "Baron", "König", "Archlord", "Genius", "Ritter", "Curry", "Burger", "Mc", "Doktor", "Gentoomaster", "Chef", "Lead Developer", "Sensei"]
 firstFrag = ["Schm", "J", "Hans-J", "K", "G", "Gr", "B", "Str", "Kr", "Rask", "Sch"]
@@ -190,8 +191,9 @@ def is_image(post):
 
 
 def is_animation(post):
-    if post.url.endswith(".gif"):
-        return True
+    for ending in REDDIT_ANIMATION_FILE_ENDINGS:
+        if post.url.endswith(ending):
+            return True
     return False
 
 
@@ -209,6 +211,7 @@ def send_subreddit_posts(subreddit, update, context, offset=0, count=5):
     posts_sent = False
     try:
         for post in reddit.subreddit(subreddit).hot(limit=count):
+            print(post.url)
             # don't send subreddit rules and such
             if is_text(post) and not post.stickied:
                 message = "*"+post.title+"* \n" + post.selftext
