@@ -211,7 +211,6 @@ def send_subreddit_posts(subreddit, update, context, offset=0, count=5):
     posts_sent = False
     try:
         for post in reddit.subreddit(subreddit).hot(limit=count):
-            print(post.url)
             # don't send subreddit rules and such
             if is_text(post) and not post.stickied:
                 message = "*"+post.title+"* \n" + post.selftext
