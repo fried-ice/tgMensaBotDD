@@ -166,39 +166,70 @@ def decision(update, context):
     context.bot.send_animation(chat_id=update.message.chat_id, animation=data["image"], caption=data["answer"])
 
 
-def subredditImg(subreddit, offset=0, count=5):
+def is_video_link(post):
+    video_sites = ["youtu.be", "youtube.com", "v.redd.it"]
+    for video_site in video_sites:
+        if video_site in post.url:
+            return True
+    return False
 
-    imageFileEndings = [".png", ".jpg", ".jpeg", ".webp", ".gif"]
 
+def is_text(post):
+    if post.selftext != "":
+        return True
+    return False
+
+
+def is_image(post):
+    image_file_endings = [".png", ".jpg", ".jpeg", ".webp"]
+    for ending in image_file_endings:
+        if post.url.endswith(ending):
+            return True
+    return False
+
+
+def is_animation(post):
+    if post.url.endswith(".gif"):
+        return True
+    return False
+
+
+def send_subreddit_posts(subreddit, update, context, offset=0, count=5):
     reddit = praw.Reddit(client_id=REDDIT_BOT_ID, client_secret=REDDIT_BOT_SECRET, user_agent=REDDIT_USER_AGENT)
-
-    images = []
-
-    for post in reddit.subreddit(subreddit).hot(limit=count):
-        for ending in imageFileEndings:
-            if str(post.url).endswith(ending):
-                images.append(post)
-    return images
-
-
-def sendSubredditImages(subreddit_display_name, update, context):
+    posts_sent = False
     try:
-        images = subredditImg(subreddit_display_name)
+        for post in reddit.subreddit(subreddit).hot(limit=count):
+            # don't send subreddit rules and such
+            if is_text(post) and not post.stickied:
+                message = "*"+post.title+"* \n" + post.selftext
+                if len(message) > 1000:
+                    message = message[:1000]
+                    message = message + "*(...)* [" + post.url + "]"
+                context.bot.send_message(chat_id=update.message.chat_id, text=message, parse_mode=tg.ParseMode.MARKDOWN)
+                posts_sent = True
+            elif is_video_link(post):
+                context.bot.send_message(chat_id=update.message.chat_id, text=post.url)
+                posts_sent = True
+            elif is_animation(post):
+                print(post.url)
+                context.bot.send_animation(chat_id=update.message.chat_id, animation=post.url, caption=post.title)
+                posts_sent = True
+            elif is_image(post):
+                variants = post.preview['images'][0]['variants']
+                if "obfuscated" in variants:
+                    button = tg.InlineKeyboardButton(text="view", url=post.url)
+                    keyboard = tg.InlineKeyboardMarkup([[button]])
+                    context.bot.send_photo(chat_id=update.message.chat_id,photo=variants['obfuscated']['resolutions'][0]['url'], caption=post.title, reply_markup=keyboard)
+                else:
+                    context.bot.send_photo(chat_id=update.message.chat_id, photo=post.url, caption=post.title)
+                posts_sent = True
+
     except Exception:
         context.bot.send_message(chat_id=update.message.chat_id, text="Something went wrong internally. I am deeply sorry.")
         return
 
-    if len(images) == 0:
-        context.bot.send_message(chat_id=update.message.chat_id, text="There are no images in the top 5 posts.")
-        return
-    for image in images:
-        variants = image.preview['images'][0]['variants']
-        if "obfuscated" in variants:
-            button = tg.InlineKeyboardButton("view", image.url)
-            keyboard = tg.InlineKeyboardMarkup([[button]])
-            context.bot.send_photo(chat_id=update.message.chat_id, photo=variants['obfuscated']['resolutions'][0]['url'], caption=image.title, reply_markup=keyboard)
-        else:
-            context.bot.send_photo(chat_id=update.message.chat_id, photo=image.url, caption=image.title)
+    if not posts_sent:
+        context.bot.send_message(chat_id=update.message.chat_id, text="No compatible Posts were found.")
 
 
 def r(update, context):
@@ -218,7 +249,7 @@ def r(update, context):
             context.bot.send_message(chat_id=update.message.chat_id, text="The second parameter has to be a positive integer value. Aborting.")
             return
 
-    sendSubredditImages(subreddit, update, context)
+    send_subreddit_posts(subreddit, update, context)
 
 
 def rr(update, context):
@@ -226,7 +257,7 @@ def rr(update, context):
     sub = reddit.random_subreddit(nsfw=False)
     sub_name = sub.display_name
     context.bot.send_message(chat_id=update.message.chat_id, text="Random subreddit: \"" + sub_name + "\"")
-    sendSubredditImages(sub_name, update, context)
+    send_subreddit_posts(sub_name, update, context)
 
 
 def cat(update, context):
