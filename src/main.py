@@ -22,6 +22,9 @@ REDDIT_BOT_SECRET = ''
 REDDIT_USER_AGENT = ''
 USER_AGENT_BROWSER = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Safari/537.36'
 
+REDDIT_IMAGE_FILE_ENDINGS = [".png", ".jpg", ".jpeg", ".webp"]
+REDDIT_VIDEO_SITES = ["youtu.be", "youtube.com", "v.redd.it"]
+
 royalTitles = ["Lé", "Baron", "König", "Archlord", "Genius", "Ritter", "Curry", "Burger", "Mc", "Doktor", "Gentoomaster", "Chef", "Lead Developer"]
 firstFrag = ["Schm", "J", "Hans-J", "K", "G", "Gr", "B", "Str", "Kr", "Rask"]
 secondFrag = ["oerg", "öck", "öhhhrk", "öhrp", "egor", "oeg", "ock"]
@@ -167,8 +170,7 @@ def decision(update, context):
 
 
 def is_video_link(post):
-    video_sites = ["youtu.be", "youtube.com", "v.redd.it"]
-    for video_site in video_sites:
+    for video_site in REDDIT_VIDEO_SITES:
         if video_site in post.url:
             return True
     return False
@@ -181,8 +183,7 @@ def is_text(post):
 
 
 def is_image(post):
-    image_file_endings = [".png", ".jpg", ".jpeg", ".webp"]
-    for ending in image_file_endings:
+    for ending in REDDIT_IMAGE_FILE_ENDINGS:
         if post.url.endswith(ending):
             return True
     return False
@@ -192,6 +193,15 @@ def is_animation(post):
     if post.url.endswith(".gif"):
         return True
     return False
+
+
+def get_subreddit_images(subreddit, offset=0, count=5):
+    images = []
+    reddit = praw.Reddit(client_id=REDDIT_BOT_ID, client_secret=REDDIT_BOT_SECRET, user_agent=REDDIT_USER_AGENT)
+    for post in reddit.subreddit(subreddit).hot(limit=count):
+        if is_image(post):
+            images.append(post.url)
+    return images
 
 
 def send_subreddit_posts(subreddit, update, context, offset=0, count=5):
@@ -211,7 +221,6 @@ def send_subreddit_posts(subreddit, update, context, offset=0, count=5):
                 context.bot.send_message(chat_id=update.message.chat_id, text=post.url)
                 posts_sent = True
             elif is_animation(post):
-                print(post.url)
                 context.bot.send_animation(chat_id=update.message.chat_id, animation=post.url, caption=post.title)
                 posts_sent = True
             elif is_image(post):
@@ -350,7 +359,7 @@ def inlineR(update, context):
     query = update.inline_query.query
     results = []
     try:
-        images = subredditImg(query, count=40)
+        images = get_subreddit_images(query, count=40)
     except Exception:
         results.append(tg.InlineQueryResultArticle(0, "No", tg.InputTextMessageContent("No!")))
     else:
