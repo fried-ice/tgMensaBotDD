@@ -223,19 +223,18 @@ def send_subreddit_posts(subreddit, update, context, offset=0, count=5):
                 context.bot.send_message(chat_id=update.message.chat_id, text=post.url)
                 posts_sent = True
             elif is_animation(post):
-                context.bot.send_animation(chat_id=update.message.chat_id, animation=post.url, caption=post.title)
-                posts_sent = True
-            elif is_image(post):
-                variants = post.preview['images'][0]['variants']
-                if "obfuscated" in variants:
-                    button = tg.InlineKeyboardButton(text="view", url=post.url)
-                    keyboard = tg.InlineKeyboardMarkup([[button]])
-                    context.bot.send_photo(chat_id=update.message.chat_id,photo=variants['obfuscated']['resolutions'][0]['url'], caption=post.title, reply_markup=keyboard)
+                print(post.url)
+                if "imgur.com" in post.url or "giphy.com" in post.url:
+                    pass
                 else:
-                    context.bot.send_photo(chat_id=update.message.chat_id, photo=post.url, caption=post.title)
+                    context.bot.send_animation(chat_id=update.message.chat_id, animation=post.url, caption=post.title)
+                    posts_sent = True
+            elif is_image(post):
+                context.bot.send_photo(chat_id=update.message.chat_id, photo=post.url, caption=post.title)
                 posts_sent = True
 
-    except Exception:
+    except Exception as e:
+        print(e)
         context.bot.send_message(chat_id=update.message.chat_id, text="Something went wrong internally. I am deeply sorry.")
         return
 
