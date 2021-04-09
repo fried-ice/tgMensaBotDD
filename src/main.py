@@ -15,6 +15,7 @@ import random
 from bs4 import BeautifulSoup
 import praw
 import sys
+import enum
 
 
 REDDIT_BOT_ID = ''
@@ -25,6 +26,16 @@ USER_AGENT_BROWSER = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML,
 REDDIT_IMAGE_FILE_ENDINGS = [".png", ".jpg", ".jpeg", ".webp"]
 REDDIT_VIDEO_SITES = ["youtu.be", "youtube.com", "v.redd.it"]
 REDDIT_ANIMATION_FILE_ENDINGS = [".gif"]
+REDDIT_EXCLUDED_ANIMATION_SITES = ["imgur.com", "giphy.com"]
+
+
+class RedditPostTypes(enum.Enum):
+    text = 1
+    image = 2
+    animation = 3
+    video = 4
+    undefined = 5
+
 
 royalTitles = ["Lé", "Baron", "König", "Archlord", "Genius", "Ritter", "Curry", "Burger", "Mc", "Doktor", "Gentoomaster", "Chef", "Lead Developer", "Sensei"]
 firstFrag = ["Schm", "J", "Hans-J", "K", "G", "Gr", "B", "Str", "Kr", "Rask", "Sch"]
@@ -170,38 +181,31 @@ def decision(update, context):
     context.bot.send_animation(chat_id=update.message.chat_id, animation=data["image"], caption=data["answer"])
 
 
-def is_video_link(post):
-    for video_site in REDDIT_VIDEO_SITES:
-        if video_site in post.url:
-            return True
-    return False
-
-
-def is_text(post):
+def get_post_type(post):
+    post_type = RedditPostTypes.undefined
     if post.selftext != "":
-        return True
-    return False
-
-
-def is_image(post):
-    for ending in REDDIT_IMAGE_FILE_ENDINGS:
-        if post.url.endswith(ending):
-            return True
-    return False
-
-
-def is_animation(post):
-    for ending in REDDIT_ANIMATION_FILE_ENDINGS:
-        if post.url.endswith(ending):
-            return True
-    return False
+        post_type = RedditPostTypes.text
+    else:
+        for ending in REDDIT_IMAGE_FILE_ENDINGS:
+            if post.url.endswith(ending):
+                post_type = RedditPostTypes.image
+                break
+        for ending in REDDIT_ANIMATION_FILE_ENDINGS:
+            if post.url.endswith(ending):
+                post_type = RedditPostTypes.animation
+                break
+        for video_site in REDDIT_VIDEO_SITES:
+            if video_site in post.url:
+                post_type = RedditPostTypes.video
+                break
+    return post_type
 
 
 def get_subreddit_images(subreddit, offset=0, count=5):
     images = []
     reddit = praw.Reddit(client_id=REDDIT_BOT_ID, client_secret=REDDIT_BOT_SECRET, user_agent=REDDIT_USER_AGENT)
     for post in reddit.subreddit(subreddit).hot(limit=count):
-        if is_image(post):
+        if get_post_type(post) == RedditPostTypes.image:
             images.append(post.url)
     return images
 
@@ -211,27 +215,28 @@ def send_subreddit_posts(subreddit, update, context, offset=0, count=5):
     posts_sent = False
     try:
         for post in reddit.subreddit(subreddit).hot(limit=count):
-            # don't send subreddit rules and such
-            if is_text(post) and not post.stickied:
-                message = "*"+post.title+"* \n" + post.selftext
-                if len(message) > 1000:
-                    message = message[:1000]
-                    message = message + "*(...)* [" + post.url + "]"
-                context.bot.send_message(chat_id=update.message.chat_id, text=message, parse_mode=tg.ParseMode.MARKDOWN)
-                posts_sent = True
-            elif is_video_link(post):
-                context.bot.send_message(chat_id=update.message.chat_id, text=post.url)
-                posts_sent = True
-            elif is_animation(post):
-                print(post.url)
-                if "imgur.com" in post.url or "giphy.com" in post.url:
-                    pass
-                else:
+            print(post.url)
+            if not post.stickied:
+                post_type = get_post_type(post)
+                if post_type == RedditPostTypes.text:
+                    message = "*"+post.title+"* \n" + post.selftext
+                    if len(message) > 1000:
+                        message = message[:1000]
+                        message = message + "*(...)* [" + post.url + "]"
+                    context.bot.send_message(chat_id=update.message.chat_id, text=message, parse_mode=tg.ParseMode.MARKDOWN)
+                    posts_sent = True
+                elif post_type == RedditPostTypes.image:
+                    context.bot.send_photo(chat_id=update.message.chat_id, photo=post.url, caption=post.title)
+                    posts_sent = True
+                elif post_type == RedditPostTypes.video:
+                    context.bot.send_message(chat_id=update.message.chat_id, text=post.url)
+                    posts_sent = True
+                elif post_type == RedditPostTypes.animation:
+                    for site in REDDIT_EXCLUDED_ANIMATION_SITES:
+                        if site in post.url:
+                            pass
                     context.bot.send_animation(chat_id=update.message.chat_id, animation=post.url, caption=post.title)
                     posts_sent = True
-            elif is_image(post):
-                context.bot.send_photo(chat_id=update.message.chat_id, photo=post.url, caption=post.title)
-                posts_sent = True
 
     except Exception as e:
         print(e)
