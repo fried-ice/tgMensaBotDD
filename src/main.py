@@ -15,12 +15,27 @@ import random
 from bs4 import BeautifulSoup
 import praw
 import sys
+import enum
 
 
 REDDIT_BOT_ID = ''
 REDDIT_BOT_SECRET = ''
 REDDIT_USER_AGENT = ''
 USER_AGENT_BROWSER = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Safari/537.36'
+
+REDDIT_IMAGE_FILE_ENDINGS = [".png", ".jpg", ".jpeg", ".webp"]
+REDDIT_VIDEO_SITES = ["youtu.be", "youtube.com", "v.redd.it"]
+REDDIT_ANIMATION_FILE_ENDINGS = [".gif"]
+REDDIT_EXCLUDED_ANIMATION_SITES = ["imgur.com", "giphy.com"]
+
+
+class RedditPostTypes(enum.Enum):
+    text = 1
+    image = 2
+    animation = 3
+    video = 4
+    undefined = 5
+
 
 royalTitles = ["Lé", "Baron", "König", "Archlord", "Genius", "Ritter", "Curry", "Burger", "Mc", "Doktor", "Gentoomaster", "Chef", "Lead Developer", "Sensei"]
 firstFrag = ["Schm", "J", "Hans-J", "K", "G", "Gr", "B", "Str", "Kr", "Rask", "Sch"]
@@ -166,33 +181,70 @@ def decision(update, context):
     context.bot.send_animation(chat_id=update.message.chat_id, animation=data["image"], caption=data["answer"])
 
 
-def subredditImg(subreddit, offset=0, count=5):
+def get_post_type(post):
+    post_type = RedditPostTypes.undefined
+    if post.selftext != "":
+        post_type = RedditPostTypes.text
+    else:
+        for ending in REDDIT_IMAGE_FILE_ENDINGS:
+            if post.url.endswith(ending):
+                post_type = RedditPostTypes.image
+                break
+        for ending in REDDIT_ANIMATION_FILE_ENDINGS:
+            if post.url.endswith(ending):
+                post_type = RedditPostTypes.animation
+                break
+        for video_site in REDDIT_VIDEO_SITES:
+            if video_site in post.url:
+                post_type = RedditPostTypes.video
+                break
+    return post_type
 
-    imageFileEndings = [".png", ".jpg", ".jpeg", ".webp", ".gif"]
 
-    reddit = praw.Reddit(client_id=REDDIT_BOT_ID, client_secret=REDDIT_BOT_SECRET, user_agent=REDDIT_USER_AGENT)
-
+def get_subreddit_images(subreddit, offset=0, count=5):
     images = []
-
+    reddit = praw.Reddit(client_id=REDDIT_BOT_ID, client_secret=REDDIT_BOT_SECRET, user_agent=REDDIT_USER_AGENT)
     for post in reddit.subreddit(subreddit).hot(limit=count):
-        for ending in imageFileEndings:
-            if str(post.url).endswith(ending):
-                images.append(post.url)
+        if get_post_type(post) == RedditPostTypes.image:
+            images.append(post.url)
     return images
 
 
-def sendSubredditImages(subreddit_display_name, update, context):
+def send_subreddit_posts(subreddit, update, context, offset=0, count=5):
+    reddit = praw.Reddit(client_id=REDDIT_BOT_ID, client_secret=REDDIT_BOT_SECRET, user_agent=REDDIT_USER_AGENT)
+    posts_sent = False
     try:
-        images = subredditImg(subreddit_display_name)
-    except Exception:
+        for post in reddit.subreddit(subreddit).hot(limit=count):
+            print(post.url)
+            if not post.stickied:
+                post_type = get_post_type(post)
+                if post_type == RedditPostTypes.text:
+                    message = "*"+post.title+"* \n" + post.selftext
+                    if len(message) > 1000:
+                        message = message[:1000]
+                        message = message + "*(...)* [" + post.url + "]"
+                    context.bot.send_message(chat_id=update.message.chat_id, text=message, parse_mode=tg.ParseMode.MARKDOWN)
+                    posts_sent = True
+                elif post_type == RedditPostTypes.image:
+                    context.bot.send_photo(chat_id=update.message.chat_id, photo=post.url, caption=post.title)
+                    posts_sent = True
+                elif post_type == RedditPostTypes.video:
+                    context.bot.send_message(chat_id=update.message.chat_id, text=post.url)
+                    posts_sent = True
+                elif post_type == RedditPostTypes.animation:
+                    for site in REDDIT_EXCLUDED_ANIMATION_SITES:
+                        if site in post.url:
+                            pass
+                    context.bot.send_animation(chat_id=update.message.chat_id, animation=post.url, caption=post.title)
+                    posts_sent = True
+
+    except Exception as e:
+        print(e)
         context.bot.send_message(chat_id=update.message.chat_id, text="Something went wrong internally. I am deeply sorry.")
         return
 
-    if len(images) == 0:
-        context.bot.send_message(chat_id=update.message.chat_id, text="There are no images in the top 5 posts.")
-        return
-    for image in images:
-        context.bot.send_photo(chat_id=update.message.chat_id, photo=image)
+    if not posts_sent:
+        context.bot.send_message(chat_id=update.message.chat_id, text="No compatible Posts were found.")
 
 
 def r(update, context):
@@ -212,7 +264,7 @@ def r(update, context):
             context.bot.send_message(chat_id=update.message.chat_id, text="The second parameter has to be a positive integer value. Aborting.")
             return
 
-    sendSubredditImages(subreddit, update, context)
+    send_subreddit_posts(subreddit, update, context)
 
 
 def rr(update, context):
@@ -220,7 +272,7 @@ def rr(update, context):
     sub = reddit.random_subreddit(nsfw=False)
     sub_name = sub.display_name
     context.bot.send_message(chat_id=update.message.chat_id, text="Random subreddit: \"" + sub_name + "\"")
-    sendSubredditImages(sub_name, update, context)
+    send_subreddit_posts(sub_name, update, context)
 
 
 def cat(update, context):
@@ -313,7 +365,7 @@ def inlineR(update, context):
     query = update.inline_query.query
     results = []
     try:
-        images = subredditImg(query, count=40)
+        images = get_subreddit_images(query, count=40)
     except Exception:
         results.append(tg.InlineQueryResultArticle(0, "No", tg.InputTextMessageContent("No!")))
     else:
