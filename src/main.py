@@ -37,11 +37,11 @@ class RedditPostTypes(enum.Enum):
     undefined = 5
 
 
-royalTitles = ["Lé", "Baron", "König", "Archlord", "Genius", "Ritter", "Curry", "Burger", "Mc", "Doktor", "Gentoomaster", "Chef", "Lead Developer", "Sensei"]
-firstFrag = ["Schm", "J", "Hans-J", "K", "G", "Gr", "B", "Str", "Kr", "Rask", "Sch"]
-secondFrag = ["oerg", "öck", "öhhhrk", "öhrp", "egor", "oeg", "ock", "uck", "orsch"]
-thirdFrag = ["inger", "erino", "aroni", "us", "sell", "topus", "thulu", "tain", "rid", "odil", "ette", "nikov", "inus", "iborschi"]
-nobleAnnex = ["I.", "II.", "III.", "Royale", "dem Allmächtigen", "dem Weisen", "dem hochgradig Intelligenten", "dem Unendlichen", "dem Allwissenden", "dem Gentoobändiger", "dem Meisterinformatiker", "dem Meisterkoch", "dem Hardwareexperten", "dem Fahrradspitzensportler", "dem Besonnenen", "dem Ausdauernden"]
+royal_titles = ["Lé", "Baron", "König", "Archlord", "Genius", "Ritter", "Curry", "Burger", "Mc", "Doktor", "Gentoomaster", "Chef", "Lead Developer", "Sensei"]
+first_frag = ["Schm", "J", "Hans-J", "K", "G", "Gr", "B", "Str", "Kr", "Rask", "Sch"]
+second_frag = ["oerg", "öck", "öhhhrk", "öhrp", "egor", "oeg", "ock", "uck", "orsch"]
+third_frag = ["inger", "erino", "aroni", "us", "sell", "topus", "thulu", "tain", "rid", "odil", "ette", "nikov", "inus", "iborschi"]
+noble_annex = ["I.", "II.", "III.", "Royale", "dem Allmächtigen", "dem Weisen", "dem hochgradig Intelligenten", "dem Unendlichen", "dem Allwissenden", "dem Gentoobändiger", "dem Meisterinformatiker", "dem Meisterkoch", "dem Hardwareexperten", "dem Fahrradspitzensportler", "dem Besonnenen", "dem Ausdauernden"]
 
 wisdoms = ["Linux ist voll doof!", "Ich stehe immer um 7.00 Uhr auf!", "Tut schön viel Frischkäse in die Nudelsoße!", "Mensen um 11.00 Uhr ist eine super Sache!", "Ich habe WinRar gekauft!", "Für einen längeren XP-Supportzeitraum!", "Fasst meinen Laptopbildschirm an!", "Natürlich code ich dieses Feature für euch, ganz ohne Pull Request!", "Maxime ist ein toller Papa!", "Hirtenkäsepizza ist die beste!", "Sauerkraut ist doch ekelhaft!", "Mein Lieblingsbrowser ist ja der Internet Explorer!", "Rechtschreibfehler in Kommentaren? Voll okay!", "Party? Warum nicht bei mir zu Hause?", "Irgendwas mit dynamisch Parameter injecten!", "Wie war das mit den Speisezeiten?", "Ich kaufe nur bei Nvidia!", "Wer braucht schon Open Source...", "KöckOS? Kommt noch diese Woche raus!", "Die besten Witze sind Deine-Mutter-Witze!", "Mein Lieblings-OS ist iOS!", "Ein Halloumiburger ist eine eigenständige Mahlzeit!", "Ich kaufe mir ein MacBook!", "Ich fange wieder mit Medieninformatik an!", "Ich liebe Ubuntu!", "Verschlüsselung ist doch Unsinn!", "Machen wir alle ne gemeinsame WG auf?", "Es ist voll in Ordnung, wenn ihr kein Arch Linux benutzt!", "Ich höre am liebsten K.I.Z!", "Für Ruhezeiten von 20.00 Uhr bis 5.00 Uhr!", "Ihr seid meine besten Freunde!", "Ich entwickele nur noch unter Windows!", "Ich finde Mangas und Animes toll! Schaut mehr Animes!", "Ich esse heimlich Schnitzel!"]
 
@@ -60,33 +60,36 @@ def start(update, context):
 def mensa(update, context):
     params = context.args
     if len(params) < 1:
-        daysToAdd = 0
+        days_to_add = 0
     else:
         try:
-            daysToAdd = int(params[0])
+            days_to_add = int(params[0])
         except ValueError:
             context.bot.send_message(chat_id=update.message.chat_id, text="The first and only parameter has to be an integer value. Aborting.")
             return
-    day = update.message.date.date() + timedelta(days=daysToAdd)
+    day = update.message.date.date() + timedelta(days=days_to_add)
     url = "https://api.studentenwerk-dresden.de/openmensa/v2/canteens/4/days/" + day.strftime("%Y-%m-%d") + "/meals"
     resp = requests.get(url)
     if not resp.ok:
         context.bot.send_message(chat_id=update.message.chat_id, text="I failed miserably. Disgrace!")
         return
-    jsonData = json.loads(resp.content)
-    for elem in jsonData:
-        mealNotes = elem["notes"]
-        markdownHighlightChar = "_"
-        for note in mealNotes:
+    json_data = resp.json()
+    if len(json_data) == 0:
+        context.bot.send_message(chat_id=update.message.chat_id, text="No food today :(")
+    for elem in json_data:
+        meal_notes = elem["notes"]
+        markdown_highlight_char = "_"
+        for note in meal_notes:
             if "vegetarisch" in note or "vegan" in note:
-                markdownHighlightChar = "*"
+                markdown_highlight_char = "*"
 
-        imgUrl = elem["image"].lstrip("/") # For some reason, image URLs are prefixed with 2 leading slashes, but no protocol, remove them
+        img_url = elem["image"].lstrip("/") # For some reason, image URLs are prefixed with 2 leading slashes, but no protocol, remove them
+        print(img_url)
         # Do not send placeholder images
-        if imgUrl.endswith("studentenwerk-dresden-lieber-mensen-gehen.jpg"):
-            context.bot.send_message(chat_id=update.message.chat_id, text=markdownHighlightChar + elem["name"] + markdownHighlightChar, parse_mode="Markdown")
+        if img_url.endswith("studentenwerk-dresden-lieber-mensen-gehen.jpg"):
+            context.bot.send_message(chat_id=update.message.chat_id, text=markdown_highlight_char + elem["name"] + markdown_highlight_char, parse_mode="Markdown")
         else:
-            context.bot.send_photo(chat_id=update.message.chat_id, photo=imgUrl, caption=markdownHighlightChar + elem["name"] + markdownHighlightChar, parse_mode="Markdown")
+            context.bot.send_photo(chat_id=update.message.chat_id, photo=img_url, caption=markdown_highlight_char + elem["name"] + markdown_highlight_char, parse_mode="Markdown")
 
 
 def andre(update, context):
@@ -94,18 +97,18 @@ def andre(update, context):
 
 
 def leon(update, context):
-    joke = dadJoke()
+    joke = dad_joke()
     context.bot.send_message(chat_id=update.message.chat_id, text=joke)
 
 
 def loen(update, context):
-    joke = dadJoke()
+    joke = dad_joke()
     translator = translate.Translator(from_lang='en', to_lang='de')
-    translatedJoke = translator.translate(joke)
-    context.bot.send_message(chat_id=update.message.chat_id, text=translatedJoke)
+    translated_joke = translator.translate(joke)
+    context.bot.send_message(chat_id=update.message.chat_id, text=translated_joke)
 
 
-def dadJoke():
+def dad_joke():
     headers = {'Accept': 'text/plain '}
     resp = requests.get("https://icanhazdadjoke.com/", headers=headers)
     if not resp.ok:
@@ -129,47 +132,47 @@ def steffuu(update, context):
     context.bot.send_message(chat_id=update.message.chat_id, text=random.choice(haes))
 
 
-def getXkcd(id, rand):
+def get_xkcd(xkcd_id, rand):
     resp = requests.get("https://xkcd.com/info.0.json")
     if not resp.ok:
         raise NotifyUserException("I failed miserably. Disgrace!")
-    jsonData = json.loads(resp.content)
-    upperLimit = jsonData["num"]
+    json_data = json.loads(resp.content)
+    upper_limit = json_data["num"]
 
     if rand:
-        id = random.randint(1, upperLimit)
-    elif id > upperLimit:
-        raise NotifyUserException("Id not in range. Maximum id currently is " + str(upperLimit) + ".")
+        xkcd_id = random.randint(1, upper_limit)
+    elif xkcd_id > upper_limit:
+        raise NotifyUserException("Id not in range. Maximum id currently is " + str(upper_limit) + ".")
 
-    resp = requests.get("https://xkcd.com/" + str(id) + "/info.0.json")
+    resp = requests.get("https://xkcd.com/" + str(xkcd_id) + "/info.0.json")
     if not resp.ok:
         raise NotifyUserException("I failed miserably. Disgrace!")
 
-    jsonData = json.loads(resp.content)
-    return (id, jsonData["img"], jsonData["title"])
+    json_data = json.loads(resp.content)
+    return xkcd_id, json_data["img"], json_data["title"]
 
 
 def xkcd(update, context):
     params = context.args
     rand = False
-    id = 0
+    xkcd_id = 0
     if len(params) < 1:
         rand = True
     else:
         try:
-            id = int(params[0])
+            xkcd_id = int(params[0])
         except ValueError:
             context.bot.send_message(chat_id=update.message.chat_id, text="The first and only parameter has to be a positive integer value greater than 0. Aborting.")
             return
-        if id < 1:
+        if xkcd_id < 1:
             context.bot.send_message(chat_id=update.message.chat_id, text="The first and only parameter has to be a positive integer value greater than 0. Aborting.")
             return
     try:
-        xkcd = getXkcd(id, rand)
+        xkcd_data = get_xkcd(xkcd_id, rand)
     except NotifyUserException as error:
         context.bot.send_message(chat_id=update.message.chat_id, text=str(error))
         return
-    context.bot.send_photo(chat_id=update.message.chat_id, photo=xkcd[1], caption=str(xkcd[0]) + " - " + xkcd[2])
+    context.bot.send_photo(chat_id=update.message.chat_id, photo=xkcd_data[1], caption=str(xkcd_data[0]) + " - " + xkcd_data[2])
 
 
 def decision(update, context):
@@ -215,7 +218,6 @@ def send_subreddit_posts(subreddit, update, context, offset=0, count=5):
     posts_sent = False
     try:
         for post in reddit.subreddit(subreddit).hot(limit=count):
-            print(post.url)
             if not post.stickied:
                 post_type = get_post_type(post)
                 if post_type == RedditPostTypes.text:
@@ -283,18 +285,18 @@ def cat(update, context):
 
 
 def snack(update, context):
-    snack = requests.get("https://thissnackdoesnotexist.com/?time=" + str(time.time()) + str(random.randint(1, 1024)), headers={'User-Agent': 'USER_AGENT_BROWSER'})
-    if not snack.ok:
+    snack_data = requests.get("https://thissnackdoesnotexist.com/?time=" + str(time.time()) + str(random.randint(1, 1024)), headers={'User-Agent': 'USER_AGENT_BROWSER'})
+    if not snack_data.ok:
         context.bot.send_message(chat_id=update.message.chat_id, text="Something went wrong internally. I am deeply sorry.")
         return
 
-    soup = BeautifulSoup(snack.text,'html.parser')
+    soup = BeautifulSoup(snack_data.text,'html.parser')
     text = soup.find('h1').text
-    pictureUrl = soup.find('div').attrs.get('style').split("(", 1)[1].split(")")[0]
+    picture_url = soup.find('div').attrs.get('style').split("(", 1)[1].split(")")[0]
     context.bot.send_photo(
         chat_id=update.message.chat_id,
-        photo=pictureUrl,
-        caption = text
+        photo=picture_url,
+        caption=text
     )
 
 
@@ -317,33 +319,33 @@ def person(update, context):
 
 
 def wisdom(update, context):
-    wisdom = createWisdomString()
-    context.bot.send_message(chat_id=update.message.chat_id, text=wisdom)
+    wisdom_string = create_wisdom_string()
+    context.bot.send_message(chat_id=update.message.chat_id, text=wisdom_string)
 
 
-def createWisdomString():
-    optionalNoble = None
-    optionalThird = None
-    optionalAnnex = None
+def create_wisdom_string():
+    optional_noble = None
+    optional_third = None
+    optional_annex = None
 
     if bool(random.getrandbits(1)):
-        optionalNoble = random.choice(royalTitles)
+        optional_noble = random.choice(royal_titles)
     if bool(random.getrandbits(1)):
-        optionalThird = random.choice(thirdFrag)
+        optional_third = random.choice(third_frag)
     if bool(random.getrandbits(1)):
-        optionalAnnex = random.choice(nobleAnnex)
+        optional_annex = random.choice(noble_annex)
 
-    mainBody = random.choice(firstFrag) + random.choice(secondFrag)
+    main_body = random.choice(first_frag) + random.choice(second_frag)
     output = "Die heutige Weisheit von "
 
-    if optionalNoble:
-        output += optionalNoble + " " + mainBody
+    if optional_noble:
+        output += optional_noble + " " + main_body
     else:
-        output += mainBody
-    if optionalThird:
-        output += optionalThird
-    if optionalAnnex:
-        output += " " + optionalAnnex
+        output += main_body
+    if optional_third:
+        output += optional_third
+    if optional_annex:
+        output += " " + optional_annex
     output += ": " + random.choice(wisdoms)
     return output
 
@@ -361,7 +363,7 @@ def choose(update, context):
         context.bot.send_message(chat_id=update.message.chat_id, text=random.choice(params) + " shall be my answer!")
 
 
-def inlineR(update, context):
+def inline_r(update, context):
     query = update.inline_query.query
     results = []
     try:
@@ -390,59 +392,59 @@ def main():
 
     logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
-    API_TOKEN = os.environ['TELEGRAM_APITOKEN']
-    updater = Updater(token=API_TOKEN, use_context=True)
+    api_token = os.environ['TELEGRAM_APITOKEN']
+    updater = Updater(token=api_token, use_context=True)
 
-    startHandler = CommandHandler('start', start)
-    updater.dispatcher.add_handler(startHandler)
+    start_handler = CommandHandler('start', start)
+    updater.dispatcher.add_handler(start_handler)
 
-    mensaHandler = CommandHandler('mensa', mensa)
-    updater.dispatcher.add_handler(mensaHandler)
+    mensa_handler = CommandHandler('mensa', mensa)
+    updater.dispatcher.add_handler(mensa_handler)
 
-    andreHandler = CommandHandler('andre', andre)
-    updater.dispatcher.add_handler(andreHandler)
+    andre_handler = CommandHandler('andre', andre)
+    updater.dispatcher.add_handler(andre_handler)
 
-    leonHandler = CommandHandler('leon', leon)
-    updater.dispatcher.add_handler(leonHandler)
+    leon_handler = CommandHandler('leon', leon)
+    updater.dispatcher.add_handler(leon_handler)
 
-    georgHandler = CommandHandler('georg', georg)
-    updater.dispatcher.add_handler(georgHandler)
+    georg_handler = CommandHandler('georg', georg)
+    updater.dispatcher.add_handler(georg_handler)
 
-    loenHandler = CommandHandler('loen', loen)
-    updater.dispatcher.add_handler(loenHandler)
+    loen_handler = CommandHandler('loen', loen)
+    updater.dispatcher.add_handler(loen_handler)
 
-    maximeHandler = CommandHandler('maxime', maxime)
-    updater.dispatcher.add_handler(maximeHandler)
+    maxime_handler = CommandHandler('maxime', maxime)
+    updater.dispatcher.add_handler(maxime_handler)
 
-    andreyHandler = CommandHandler('andrey', andrey)
-    updater.dispatcher.add_handler(andreyHandler)
+    andrey_handler = CommandHandler('andrey', andrey)
+    updater.dispatcher.add_handler(andrey_handler)
 
-    steffuuHandler = CommandHandler('steffuu', steffuu)
-    updater.dispatcher.add_handler(steffuuHandler)
+    steffuu_handler = CommandHandler('steffuu', steffuu)
+    updater.dispatcher.add_handler(steffuu_handler)
 
-    xkcdHandler = CommandHandler('xkcd', xkcd)
-    updater.dispatcher.add_handler(xkcdHandler)
+    xkcd_handler = CommandHandler('xkcd', xkcd)
+    updater.dispatcher.add_handler(xkcd_handler)
 
-    decisionHandler = CommandHandler('decision', decision)
-    updater.dispatcher.add_handler(decisionHandler)
+    decision_handler = CommandHandler('decision', decision)
+    updater.dispatcher.add_handler(decision_handler)
 
-    catHandler = CommandHandler('cat', cat)
-    updater.dispatcher.add_handler(catHandler)
+    cat_handler = CommandHandler('cat', cat)
+    updater.dispatcher.add_handler(cat_handler)
 
-    snackHandler = CommandHandler('snack', snack)
-    updater.dispatcher.add_handler(snackHandler)
+    snack_handler = CommandHandler('snack', snack)
+    updater.dispatcher.add_handler(snack_handler)
 
-    horseHandler = CommandHandler('horse', horse)
-    updater.dispatcher.add_handler(horseHandler)
+    horse_handler = CommandHandler('horse', horse)
+    updater.dispatcher.add_handler(horse_handler)
 
-    personHandler = CommandHandler('person', person)
-    updater.dispatcher.add_handler(personHandler)
+    person_handler = CommandHandler('person', person)
+    updater.dispatcher.add_handler(person_handler)
 
-    wisdomHandler = CommandHandler('wisdom', wisdom)
-    updater.dispatcher.add_handler(wisdomHandler)
+    wisdom_handler = CommandHandler('wisdom', wisdom)
+    updater.dispatcher.add_handler(wisdom_handler)
 
-    chooseHandler = CommandHandler('choose', choose)
-    updater.dispatcher.add_handler(chooseHandler)
+    choose_handler = CommandHandler('choose', choose)
+    updater.dispatcher.add_handler(choose_handler)
 
     if reddit_enable:
         global REDDIT_BOT_ID
@@ -454,24 +456,24 @@ def main():
         global REDDIT_USER_AGENT
         REDDIT_USER_AGENT = os.environ['REDDIT_USER_AGENT']
 
-        redditImgHandler = CommandHandler('r', r)
-        updater.dispatcher.add_handler(redditImgHandler)
+        reddit_img_handler = CommandHandler('r', r)
+        updater.dispatcher.add_handler(reddit_img_handler)
 
-        redditRandomHandler = CommandHandler('rr', rr)
-        updater.dispatcher.add_handler(redditRandomHandler)
+        reddit_random_handler = CommandHandler('rr', rr)
+        updater.dispatcher.add_handler(reddit_random_handler)
 
-        inlineRedditHandler = InlineQueryHandler(inlineR)
-        updater.dispatcher.add_handler(inlineRedditHandler)
+        inline_reddit_handler = InlineQueryHandler(inline_r)
+        updater.dispatcher.add_handler(inline_reddit_handler)
 
     if polling_enable:
         updater.start_polling()
         updater.idle()
 
     else:
-        APP_ADDR = os.environ['APP_ADDRESS']
-        PORT = int(os.environ.get('PORT', '8443'))
-        updater.start_webhook(listen="0.0.0.0", port=PORT, url_path=API_TOKEN)
-        updater.bot.set_webhook(APP_ADDR + API_TOKEN)
+        app_addr = os.environ['APP_ADDRESS']
+        port = int(os.environ.get('PORT', '8443'))
+        updater.start_webhook(listen="0.0.0.0", port=port, url_path=api_token)
+        updater.bot.set_webhook(app_addr + api_token)
         updater.idle()
 
 
