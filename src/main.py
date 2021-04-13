@@ -130,7 +130,7 @@ def andrey(update, context):
 
 def steffuu(update, context):
     context.bot.send_message(chat_id=update.message.chat_id, text=random.choice(haes))
-    
+
 def thomas(update, context):
         sticker_set = context.bot.get_sticker_set("jason_funderburker")
         random_sticker = random.choice(sticker_set.stickers)
@@ -425,7 +425,7 @@ def main():
 
     steffuu_handler = CommandHandler('steffuu', steffuu)
     updater.dispatcher.add_handler(steffuu_handler)
-    
+
     thomas_handler = CommandHandler('thomas', thomas)
     updater.dispatcher.add_handler(thomas_handler)
 
