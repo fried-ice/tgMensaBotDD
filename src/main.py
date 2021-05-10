@@ -131,6 +131,10 @@ def andrey(update, context):
 def steffuu(update, context):
     context.bot.send_message(chat_id=update.message.chat_id, text=random.choice(haes))
 
+def thomas(update, context):
+        sticker_set = context.bot.get_sticker_set("jason_funderburker")
+        random_sticker = random.choice(sticker_set.stickers)
+        context.bot.send_sticker(chat_id=update.message.chat_id, sticker=random_sticker)
 
 def get_xkcd(xkcd_id, rand):
     resp = requests.get("https://xkcd.com/info.0.json")
@@ -421,6 +425,9 @@ def main():
 
     steffuu_handler = CommandHandler('steffuu', steffuu)
     updater.dispatcher.add_handler(steffuu_handler)
+
+    thomas_handler = CommandHandler('thomas', thomas)
+    updater.dispatcher.add_handler(thomas_handler)
 
     xkcd_handler = CommandHandler('xkcd', xkcd)
     updater.dispatcher.add_handler(xkcd_handler)
