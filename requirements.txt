@@ -3,3 +3,4 @@ requests
 translate
 praw
 BeautifulSoup4
+inspiro

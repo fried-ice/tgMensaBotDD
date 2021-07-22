@@ -16,6 +16,7 @@ from bs4 import BeautifulSoup
 import praw
 import sys
 import enum
+import inspirobot
 
 
 REDDIT_BOT_ID = ''
@@ -367,6 +368,11 @@ def choose(update, context):
         context.bot.send_message(chat_id=update.message.chat_id, text=random.choice(params) + " shall be my answer!")
 
 
+def inspiroBot(update, context):
+    quote = inspirobot.generate()
+    context.bot.send_photo(chat_id=update.message.chat_id, photo=quote.url)
+
+
 def inline_r(update, context):
     query = update.inline_query.query
     results = []
@@ -452,6 +458,9 @@ def main():
 
     choose_handler = CommandHandler('choose', choose)
     updater.dispatcher.add_handler(choose_handler)
+
+    inspirationHandler = CommandHandler('inspiration', inspiroBot)
+    updater.dispatcher.add_handler(inspirationHandler)
 
     if reddit_enable:
         global REDDIT_BOT_ID
