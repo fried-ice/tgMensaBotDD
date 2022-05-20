@@ -436,7 +436,7 @@ def main():
     zelt_mensa_handler = CommandHandler('zelt', zelt_mensa)
     updater.dispatcher.add_handler(zelt_mensa_handler)
 
-    siedepunkt_mensa_handler = CommandHandler('siedepunkt', siedepunkt_mensa)
+    siedepunkt_mensa_handler = CommandHandler('siede', siedepunkt_mensa)
     updater.dispatcher.add_handler(siedepunkt_mensa_handler)
 
     reichenbach_mensa_handler = CommandHandler('reichenbach', reichenbach_mensa)
