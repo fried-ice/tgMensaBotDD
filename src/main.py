@@ -58,6 +58,7 @@ def start(update, context):
     context.bot.send_message(chat_id=update.message.chat_id, text="Reichenbach is never an option!")
 
 
+# Get the ID for your mensa from https://api.studentenwerk-dresden.de/openmensa/v2/canteens
 def mensa(update, context, mensaId):
     params = context.args
     if len(params) < 1:
