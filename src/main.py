@@ -58,7 +58,8 @@ def start(update, context):
     context.bot.send_message(chat_id=update.message.chat_id, text="Reichenbach is never an option!")
 
 
-def mensa(update, context):
+# Get the ID for your mensa from https://api.studentenwerk-dresden.de/openmensa/v2/canteens
+def mensa(update, context, mensaId):
     params = context.args
     if len(params) < 1:
         days_to_add = 0
@@ -69,7 +70,7 @@ def mensa(update, context):
             context.bot.send_message(chat_id=update.message.chat_id, text="The first and only parameter has to be an integer value. Aborting.")
             return
     day = update.message.date.date() + timedelta(days=days_to_add)
-    url = "https://api.studentenwerk-dresden.de/openmensa/v2/canteens/4/days/" + day.strftime("%Y-%m-%d") + "/meals"
+    url = "https://api.studentenwerk-dresden.de/openmensa/v2/canteens/" + str(mensaId) + "/days/" + day.strftime("%Y-%m-%d") + "/meals"
     resp = requests.get(url)
     if not resp.ok:
         context.bot.send_message(chat_id=update.message.chat_id, text="I failed miserably. Disgrace!")
@@ -85,12 +86,31 @@ def mensa(update, context):
                 markdown_highlight_char = "*"
 
         img_url = elem["image"].lstrip("/") # For some reason, image URLs are prefixed with 2 leading slashes, but no protocol, remove them
-        print(img_url)
         # Do not send placeholder images
         if img_url.endswith("studentenwerk-dresden-lieber-mensen-gehen.jpg"):
             context.bot.send_message(chat_id=update.message.chat_id, text=markdown_highlight_char + elem["name"] + markdown_highlight_char, parse_mode="Markdown")
         else:
             context.bot.send_photo(chat_id=update.message.chat_id, photo=img_url, caption=markdown_highlight_char + elem["name"] + markdown_highlight_char, parse_mode="Markdown")
+
+
+def alte_mensa(update, context):
+    mensa(update, context, 4)
+
+
+def zelt_mensa(update, context):
+    mensa(update, context, 35)
+
+
+def siedepunkt_mensa(update, context):
+    mensa(update, context, 9)
+
+
+def reichenbach_mensa(update, context):
+    mensa(update, context, 6)
+
+
+def bio_mensa(update, context):
+    mensa(update, context, 29)
 
 
 def andre(update, context):
@@ -408,8 +428,23 @@ def main():
     start_handler = CommandHandler('start', start)
     updater.dispatcher.add_handler(start_handler)
 
-    mensa_handler = CommandHandler('mensa', mensa)
+    mensa_handler = CommandHandler('mensa', alte_mensa)
     updater.dispatcher.add_handler(mensa_handler)
+
+    alte_mensa_handler = CommandHandler('alte', alte_mensa)
+    updater.dispatcher.add_handler(alte_mensa_handler)
+
+    zelt_mensa_handler = CommandHandler('zelt', zelt_mensa)
+    updater.dispatcher.add_handler(zelt_mensa_handler)
+
+    siedepunkt_mensa_handler = CommandHandler('siede', siedepunkt_mensa)
+    updater.dispatcher.add_handler(siedepunkt_mensa_handler)
+
+    reichenbach_mensa_handler = CommandHandler('reichenbach', reichenbach_mensa)
+    updater.dispatcher.add_handler(reichenbach_mensa_handler)
+
+    bio_mensa_handler = CommandHandler('bio', bio_mensa)
+    updater.dispatcher.add_handler(bio_mensa_handler)
 
     andre_handler = CommandHandler('andre', andre)
     updater.dispatcher.add_handler(andre_handler)
