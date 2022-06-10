@@ -253,8 +253,13 @@ def send_subreddit_posts(subreddit, update, context, offset=0, count=5):
                     context.bot.send_message(chat_id=update.message.chat_id, text=message, parse_mode=tg.ParseMode.MARKDOWN)
                     posts_sent = True
                 elif post_type == RedditPostTypes.image:
-                    context.bot.send_photo(chat_id=update.message.chat_id, photo=post.url, caption=post.title)
-                    posts_sent = True
+                    # The telegram API apparently does not accept progressive JPEGs
+                    # If this is the case, skip this post and continue
+                    try:
+                        context.bot.send_photo(chat_id=update.message.chat_id, photo=post.url, caption=post.title)
+                        posts_sent = True
+                    except tg.error.BadRequest:
+                        continue
                 elif post_type == RedditPostTypes.video:
                     context.bot.send_message(chat_id=update.message.chat_id, text=post.url)
                     posts_sent = True
