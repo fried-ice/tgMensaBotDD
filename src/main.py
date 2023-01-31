@@ -119,6 +119,10 @@ def bio_mensa(update, context):
     mensa(update, context, 29)
 
 
+def mensologie_mensa(update, context):
+    mensa(update, context, 8)
+
+
 def andre(update, context):
     context.bot.send_message(chat_id=update.message.chat_id, text="Höhöhö Reichenbach!")
 
@@ -456,6 +460,9 @@ def main():
 
     bio_mensa_handler = CommandHandler('bio', bio_mensa)
     updater.dispatcher.add_handler(bio_mensa_handler)
+
+    mensologie_mensa_handler = CommandHandler('mensologie', mensologie_mensa)
+    updater.dispatcher.add_handler(mensologie_mensa_handler)
 
     andre_handler = CommandHandler('andre', andre)
     updater.dispatcher.add_handler(andre_handler)
