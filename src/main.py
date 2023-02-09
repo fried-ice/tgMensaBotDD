@@ -463,7 +463,11 @@ async def get_song(update, context):
         photo="https://this-voice-does-not-exist.com/" + resp_cover.text
     )
     with io.BytesIO(resp_song.content) as buf:
-        await context.bot.send_audio(chat_id=update.message.chat_id, audio=buf)
+        await context.bot.send_audio(
+            chat_id=update.message.chat_id,
+            audio=buf, performer="https://this-voice-does-not-exist.com/music",
+            title=instrument
+        )
 
 
 async def inline_r(update: Update, context: ContextTypes.DEFAULT_TYPE):
