@@ -448,25 +448,26 @@ async def get_song(update, context):
     instrument = "piano" if len(context.args) == 0 else context.args[0]
     if instrument not in instruments:
         await context.bot.send_message(chat_id=update.message.chat_id,
-                                 text="Instrument not supported, choose one of: " + str(instruments))
+                                       text='Instrument not supported, choose one of: ' + str(instruments))
         return
-    resp_song = requests.get("https://this-voice-does-not-exist.com/api/get_song?&instrument=" + instrument)
-    resp_cover = requests.get("https://this-voice-does-not-exist.com/api/get_song_cover?&instrument=" + instrument)
+    resp_song = requests.get('https://this-voice-does-not-exist.com/api/get_song?&instrument=' + instrument)
+    resp_cover = requests.get('https://this-voice-does-not-exist.com/api/get_song_cover?&instrument=' + instrument)
 
     if not resp_song.ok or not resp_cover.ok:
         await context.bot.send_message(chat_id=update.message.chat_id,
-                                 text="Something went wrong internally. I am deeply sorry.")
+                                 text='Something went wrong internally. I am deeply sorry.')
         return
 
     await context.bot.send_photo(
         chat_id=update.message.chat_id,
-        photo="https://this-voice-does-not-exist.com/" + resp_cover.text
+        photo='https://this-voice-does-not-exist.com/' + resp_cover.text
     )
     with io.BytesIO(resp_song.content) as buf:
         await context.bot.send_audio(
             chat_id=update.message.chat_id,
-            audio=buf, performer="https://this-voice-does-not-exist.com/music",
-            title=instrument
+            audio=buf, performer='https://this-voice-does-not-exist.com/music',
+            title=instrument + '.wav',
+            duration=45
         )
 
 
