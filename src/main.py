@@ -60,12 +60,12 @@ class NotifyUserException(Exception):
     pass
 
 
-async def start(update, context):
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.message.chat_id, text="Reichenbach is never an option!")
 
 
 # Get the ID for your mensa from https://api.studentenwerk-dresden.de/openmensa/v2/canteens
-async def mensa(update, context, mensaId):
+async def mensa(update: Update, context: ContextTypes.DEFAULT_TYPE, mensaId):
     params = context.args
     if len(params) < 1:
         days_to_add = 0
@@ -93,8 +93,7 @@ async def mensa(update, context, mensaId):
             if "vegetarisch" in note or "vegan" in note:
                 markdown_highlight_char = "*"
 
-        img_url = elem["image"].lstrip(
-            "/")  # For some reason, image URLs are prefixed with 2 leading slashes, but no protocol, remove them
+        img_url = elem["image"].lstrip("/")  # For some reason, image URLs are prefixed with 2 leading slashes, but no protocol, remove them
         # Do not send placeholder images
         if img_url.endswith("studentenwerk-dresden-lieber-mensen-gehen.jpg"):
             await context.bot.send_message(chat_id=update.message.chat_id,
@@ -106,40 +105,40 @@ async def mensa(update, context, mensaId):
                                          parse_mode="Markdown")
 
 
-async def alte_mensa(update, context):
+async def alte_mensa(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await mensa(update, context, 4)
 
 
-async def zelt_mensa(update, context):
+async def zelt_mensa(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await mensa(update, context, 35)
 
 
-async def siedepunkt_mensa(update, context):
+async def siedepunkt_mensa(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await mensa(update, context, 9)
 
 
-async def reichenbach_mensa(update, context):
+async def reichenbach_mensa(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await mensa(update, context, 6)
 
 
-async def bio_mensa(update, context):
+async def bio_mensa(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await mensa(update, context, 29)
 
 
-async def mensologie_mensa(update, context):
+async def mensologie_mensa(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await mensa(update, context, 8)
 
 
-async def andre(update, context):
+async def andre(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.message.chat_id, text="Höhöhö Reichenbach!")
 
 
-async def leon(update, context):
+async def leon(update: Update, context: ContextTypes.DEFAULT_TYPE):
     joke = dad_joke()
     await context.bot.send_message(chat_id=update.message.chat_id, text=joke)
 
 
-async def loen(update, context):
+async def loen(update: Update, context: ContextTypes.DEFAULT_TYPE):
     joke = dad_joke()
     translator = translate.Translator(from_lang='en', to_lang='de')
     translated_joke = translator.translate(joke)
@@ -154,24 +153,24 @@ def dad_joke():
     return resp.text
 
 
-async def georg(update, context):
+async def georg(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.message.chat_id,
                                    text="https://wiki.archlinux.org/index.php/Installation_guide")
 
 
-async def maxime(update, context):
+async def maxime(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_sticker(chat_id=update.message.chat_id, sticker="CAADBQADfAMAAukKyAPfAAFRgAuYdNoWBA")
 
 
-async def andrey(update, context):
+async def andrey(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.message.chat_id, text="11.00 Bois. Yeef!")
 
 
-async def steffuu(update, context):
+async def steffuu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.message.chat_id, text=random.choice(haes))
 
 
-async def thomas(update, context):
+async def thomas(update: Update, context: ContextTypes.DEFAULT_TYPE):
     sticker_set = await context.bot.get_sticker_set("jason_funderburker")
     random_sticker = random.choice(sticker_set.stickers)
     await context.bot.send_sticker(chat_id=update.message.chat_id, sticker=random_sticker)
@@ -197,7 +196,7 @@ def get_xkcd(xkcd_id, rand):
     return xkcd_id, json_data["img"], json_data["title"]
 
 
-async def xkcd(update, context):
+async def xkcd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     params = context.args
     rand = False
     xkcd_id = 0
@@ -223,7 +222,7 @@ async def xkcd(update, context):
                                  caption=str(xkcd_data[0]) + " - " + xkcd_data[2])
 
 
-async def decision(update, context):
+async def decision(update: Update, context: ContextTypes.DEFAULT_TYPE):
     headers = {'Accept': 'text/plain '}
     resp = requests.get("https://yesno.wtf/api/", headers=headers)
     if not resp.ok:
@@ -261,7 +260,7 @@ def get_subreddit_images(subreddit, offset=0, count=5):
     return images
 
 
-async def send_subreddit_posts(subreddit, update, context, offset=0, count=5):
+async def send_subreddit_posts(subreddit, update: Update, context: ContextTypes.DEFAULT_TYPE, offset=0, count=5):
     reddit = asyncpraw.Reddit(client_id=REDDIT_BOT_ID, client_secret=REDDIT_BOT_SECRET, user_agent=REDDIT_USER_AGENT)
     posts_sent = False
     content = await reddit.subreddit(subreddit)
@@ -306,7 +305,7 @@ async def send_subreddit_posts(subreddit, update, context, offset=0, count=5):
         await context.bot.send_message(chat_id=update.message.chat_id, text="No compatible Posts were found.")
 
 
-async def r(update, context):
+async def r(update: Update, context: ContextTypes.DEFAULT_TYPE):
     params = context.args
     offset = 0
     if len(params) < 1:
@@ -329,7 +328,7 @@ async def r(update, context):
     await send_subreddit_posts(subreddit, update, context)
 
 
-async def rr(update, context):
+async def rr(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reddit = asyncpraw.Reddit(client_id=REDDIT_BOT_ID, client_secret=REDDIT_BOT_SECRET, user_agent=REDDIT_USER_AGENT)
     sub = await reddit.random_subreddit(nsfw=False)
     sub_name = sub.display_name
@@ -337,14 +336,14 @@ async def rr(update, context):
     await send_subreddit_posts(sub_name, update, context)
 
 
-async def cat(update, context):
+async def cat(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_photo(
         chat_id=update.message.chat_id,
         photo="https://thiscatdoesnotexist.com?time=" + str(time.time()) + str(random.randint(1, 1024))
     )
 
 
-async def snack(update, context):
+async def snack(update: Update, context: ContextTypes.DEFAULT_TYPE):
     snack_data = requests.get(
         "https://thissnackdoesnotexist.com/?time=" + str(time.time()) + str(random.randint(1, 1024)),
         headers={'User-Agent': 'USER_AGENT_BROWSER'})
@@ -370,7 +369,7 @@ async def horse(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 
-async def person(update, context):
+async def person(update: Update, context: ContextTypes.DEFAULT_TYPE):
     resp = requests.get(
         "https://thispersondoesnotexist.com/image?time=" + str(time.time()) + str(random.randint(1, 1024)),
         headers={'User-Agent': 'USER_AGENT_BROWSER'})
@@ -384,7 +383,7 @@ async def person(update, context):
         await context.bot.send_photo(chat_id=update.message.chat_id, photo=buf)
 
 
-async def wisdom(update, context):
+async def wisdom(update: Update, context: ContextTypes.DEFAULT_TYPE):
     wisdom_string = create_wisdom_string()
     await context.bot.send_message(chat_id=update.message.chat_id, text=wisdom_string)
 
@@ -416,7 +415,7 @@ def create_wisdom_string():
     return output
 
 
-async def choose(update, context):
+async def choose(update: Update, context: ContextTypes.DEFAULT_TYPE):
     params = context.args
 
     if len(params) < 1:
@@ -432,12 +431,12 @@ async def choose(update, context):
                                        text=random.choice(params) + " shall be my answer!")
 
 
-async def inspiro_bot(update, context):
+async def inspiro_bot(update: Update, context: ContextTypes.DEFAULT_TYPE):
     quote = inspirobot.generate()
     await context.bot.send_photo(chat_id=update.message.chat_id, photo=quote.url)
 
 
-async def inline_r(update, context):
+async def inline_r(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.inline_query.query
     results = []
     try:
