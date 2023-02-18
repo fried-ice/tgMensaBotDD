@@ -1,6 +1,6 @@
-python-telegram-bot==13
+python-telegram-bot
 requests
 translate
-praw
+asyncpraw
 BeautifulSoup4
 inspiro
