@@ -1,7 +1,5 @@
 python-telegram-bot==20.1
 requests
 deep_translator
-praw
 asyncpraw
-BeautifulSoup4
 inspiro
