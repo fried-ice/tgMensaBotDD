@@ -436,6 +436,13 @@ async def inspiro_bot(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_photo(chat_id=update.message.chat_id, photo=quote.url)
 
 
+async def get_pepe(update, context):
+    await context.bot.send_photo(
+        chat_id=update.message.chat_id,
+        photo="http://www.thispepedoesnotexist.co.uk/out/pepe (" + str(random.randint(1, 9760)) + ").png"
+    )
+
+
 async def inline_r(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.inline_query.query
     results = []
@@ -493,6 +500,7 @@ def main():
     application.add_handler(CommandHandler('wisdom', wisdom))
     application.add_handler(CommandHandler('choose', choose))
     application.add_handler(CommandHandler('inspiration', inspiro_bot))
+    application.add_handler(CommandHandler('pepe', get_pepe))
 
     if reddit_enable:
         global REDDIT_BOT_ID
