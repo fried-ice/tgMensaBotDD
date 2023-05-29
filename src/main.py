@@ -8,12 +8,10 @@ import requests
 import json
 import os
 import io
-import time
 import logging
 from datetime import timedelta
 from deep_translator import GoogleTranslator
 import random
-from bs4 import BeautifulSoup
 import asyncpraw
 import sys
 import enum
@@ -336,53 +334,6 @@ async def rr(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await send_subreddit_posts(sub_name, update, context)
 
 
-async def cat(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await context.bot.send_photo(
-        chat_id=update.message.chat_id,
-        photo="https://thiscatdoesnotexist.com?time=" + str(time.time()) + str(random.randint(1, 1024))
-    )
-
-
-async def snack(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    snack_data = requests.get(
-        "https://thissnackdoesnotexist.com/?time=" + str(time.time()) + str(random.randint(1, 1024)),
-        headers={'User-Agent': 'USER_AGENT_BROWSER'})
-    if not snack_data.ok:
-        await context.bot.send_message(chat_id=update.message.chat_id,
-                                       text="Something went wrong internally. I am deeply sorry.")
-        return
-
-    soup = BeautifulSoup(snack_data.text, 'html.parser')
-    text = soup.find('h1').text
-    picture_url = soup.find('div').attrs.get('style').split("(", 1)[1].split(")")[0]
-    await context.bot.send_photo(
-        chat_id=update.message.chat_id,
-        photo=picture_url,
-        caption=text
-    )
-
-
-async def horse(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await context.bot.send_photo(
-        chat_id=update.message.chat_id,
-        photo="https://thishorsedoesnotexist.com?time=" + str(time.time()) + str(random.randint(1, 1024))
-    )
-
-
-async def person(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    resp = requests.get(
-        "https://thispersondoesnotexist.com/image?time=" + str(time.time()) + str(random.randint(1, 1024)),
-        headers={'User-Agent': 'USER_AGENT_BROWSER'})
-
-    if not resp.ok:
-        await context.bot.send_message(chat_id=update.message.chat_id,
-                                       text="Something went wrong internally. I am deeply sorry.")
-        return
-
-    with io.BytesIO(resp.content) as buf:
-        await context.bot.send_photo(chat_id=update.message.chat_id, photo=buf)
-
-
 async def wisdom(update: Update, context: ContextTypes.DEFAULT_TYPE):
     wisdom_string = create_wisdom_string()
     await context.bot.send_message(chat_id=update.message.chat_id, text=wisdom_string)
@@ -521,10 +472,6 @@ def main():
     application.add_handler(CommandHandler('thomas', thomas))
     application.add_handler(CommandHandler('xkcd', xkcd))
     application.add_handler(CommandHandler('decision', decision))
-    application.add_handler(CommandHandler('cat', cat))
-    application.add_handler(CommandHandler('snack', snack))
-    application.add_handler(CommandHandler('horse', horse))
-    application.add_handler(CommandHandler('person', person))
     application.add_handler(CommandHandler('wisdom', wisdom))
     application.add_handler(CommandHandler('choose', choose))
     application.add_handler(CommandHandler('inspiration', inspiro_bot))
