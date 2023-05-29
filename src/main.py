@@ -11,7 +11,7 @@ import io
 import time
 import logging
 from datetime import timedelta
-import translate
+from deep_translator import GoogleTranslator
 import random
 from bs4 import BeautifulSoup
 import asyncpraw
@@ -140,17 +140,17 @@ async def leon(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def loen(update: Update, context: ContextTypes.DEFAULT_TYPE):
     joke = dad_joke()
-    translator = translate.Translator(from_lang='en', to_lang='de')
-    translated_joke = translator.translate(joke)
+    translated_joke = GoogleTranslator(source='en', target='de').translate(joke)
     await context.bot.send_message(chat_id=update.message.chat_id, text=translated_joke)
 
 
 def dad_joke():
-    headers = {'Accept': 'text/plain '}
+    headers = {'Accept': 'application/json '}
     resp = requests.get("https://icanhazdadjoke.com/", headers=headers)
     if not resp.ok:
         return "I failed miserably. Disgrace!"
-    return resp.text
+    resp_json = resp.json()
+    return resp_json['joke']
 
 
 async def georg(update: Update, context: ContextTypes.DEFAULT_TYPE):
