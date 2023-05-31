@@ -260,10 +260,11 @@ def get_post_type(post):
     return post_type
 
 
-def get_subreddit_images(subreddit, offset=0, count=5):
+async def get_subreddit_images(subreddit, offset=0, count=5):
     images = []
     reddit = asyncpraw.Reddit(client_id=REDDIT_BOT_ID, client_secret=REDDIT_BOT_SECRET, user_agent=REDDIT_USER_AGENT)
-    for post in reddit.subreddit(subreddit).hot(limit=count):
+    sub = await reddit.subreddit(subreddit)
+    async for post in sub.hot(limit=count):
         if get_post_type(post) == RedditPostTypes.image:
             images.append(post.url)
     return images
@@ -437,8 +438,9 @@ async def inline_r(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.inline_query.query
     results = []
     try:
-        images = get_subreddit_images(query, count=40)
-    except Exception:
+        images = await get_subreddit_images(query, count=40)
+    except Exception as e:
+        logging.exception(e)
         results.append(tg.InlineQueryResultArticle(0, "No", tg.InputTextMessageContent("No!")))
     else:
         if len(images) == 0:
