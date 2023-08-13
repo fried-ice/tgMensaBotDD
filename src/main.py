@@ -266,6 +266,7 @@ def get_subreddit_images(subreddit, offset=0, count=5):
     for post in reddit.subreddit(subreddit).hot(limit=count):
         if get_post_type(post) == RedditPostTypes.image:
             images.append(post.url)
+    reddit.close()
     return images
 
 
@@ -283,7 +284,7 @@ async def send_subreddit_posts(subreddit, update: Update, context: ContextTypes.
                         message = message[:1000]
                         message = message + "*(...)* [" + post.url + "]"
                     await context.bot.send_message(chat_id=update.message.chat_id, text=message,
-                                                   parse_mode=tg.ParseMode.MARKDOWN)
+                                                   parse_mode="Markdown")
                     posts_sent = True
                 elif post_type == RedditPostTypes.image:
                     # The telegram API apparently does not accept progressive JPEGs
@@ -309,6 +310,9 @@ async def send_subreddit_posts(subreddit, update: Update, context: ContextTypes.
         await context.bot.send_message(chat_id=update.message.chat_id,
                                        text="Something went wrong internally. I am deeply sorry.")
         return
+
+    finally:
+        await reddit.close()
 
     if not posts_sent:
         await context.bot.send_message(chat_id=update.message.chat_id, text="No compatible Posts were found.")
@@ -343,6 +347,7 @@ async def rr(update: Update, context: ContextTypes.DEFAULT_TYPE):
     sub_name = sub.display_name
     await context.bot.send_message(chat_id=update.message.chat_id, text="Random subreddit: \"" + sub_name + "\"")
     await send_subreddit_posts(sub_name, update, context)
+    await reddit.close()
 
 
 async def wisdom(update: Update, context: ContextTypes.DEFAULT_TYPE):
